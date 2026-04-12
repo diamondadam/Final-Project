@@ -1,0 +1,21 @@
+Project Goal
+Your final project will use this testbed and the tools you learn in class to answer a core question: Can we detect structural conditions under the track using only the vibration signals from the moving train?
+
+Design a digital twin version of the system
+Collect real and virtual measurements
+Integrate sensing data
+Apply decision-making algorithms (including AI-based approaches)
+Submit:
+
+A final report
+A short video presentation
+Python code or tools developed along the way
+For the report, submit it using the ACM BuildSyS format. Submissions must be, at most _ pages (confirm with instructor in class), single-spaced US Letter (8.5” x 11”) pages, including figures, tables, references, and appendices. Submissions. All submissions must use the LaTeX (preferred), or Word styles found hereLinks to an external site.. Please, use the template “sigconf”.
+ 
+Grading Rubric 
+• Formatting and organization (15%)
+• Grammar, clarity and accuracy of ideas (15%)
+• Display of mastery of concepts covered in class (35%)
+• Creativity expressed in the solution (10%)
+• Depth of discussion related to the pros/cons of the implemented solution (15%)
+• Overall assessment of the project’s idea and execution (10%)
