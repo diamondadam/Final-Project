@@ -23,10 +23,6 @@ Components
 """
 
 
-labeled_data_example = {
-'Healthy': [sample1, sample2, sample3]
-'Degraded': []
-}
 import random
 import numpy as np
 import matplotlib
@@ -39,6 +35,12 @@ warnings.filterwarnings("ignore")
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
+
+import shutil
+from pyomo.environ import (
+    ConcreteModel, Var, Objective, Constraint,
+    SolverFactory, minimize,
+)
 
 # Import shared helpers from the classifier module
 import sys
@@ -172,64 +174,136 @@ class BayesianSegmentTracker:
 # 3.  MPC Speed Controller
 # ══════════════════════════════════════════════════════════════════════════════
 
-class MPCSpeedController:
+class PyomoMPCController:
     """
-    Receding-horizon speed controller.
+    Receding-horizon speed controller using Pyomo + IPOPT.
 
-    At each segment the MPC looks ahead MPC_HORIZON segments, computes a
-    risk score for each using the current Bayesian beliefs, then selects the
-    commanded speed for the *current* segment that minimises cumulative risk
-    while respecting acceleration constraints.
+    Objective (QP solved each segment):
+        minimize  sum_{t=0}^{H-1}  (speed[t] - v_safe[t])^2
 
-    Risk model:
-        risk(belief) = sum_i  belief[i] * SPEED_PENALTY[i]
-        speed = V_MAX * (1 - risk)  clamped to [V_MIN, V_MAX]
+    where v_safe[t] is derived from the MAP health state of the look-ahead
+    segment:
+        Healthy  (0) -> v_max
+        Degraded (1) -> 0.6 * v_max
+        Damaged  (2) -> 0.3 * v_max
 
-    This is a linear, single-state MPC; replacing it with a Pyomo-based QP
-    is straightforward for the full project.
+    Constraints:
+        v_min  <= speed[t]              <= v_max       for all t
+               |speed[t+1] - speed[t]| <= delta_v_max  for all t in 0..H-2
+
+    Only speed[0] is applied (receding horizon); the rest are discarded.
     """
 
-    def __init__(self, v_max: float, v_min: float, horizon: int):
-        self.v_max   = v_max
-        self.v_min   = v_min
+    V_SAFE_MULT = {0: 1.0, 1: 0.6, 2: 0.3}
+
+    def __init__(
+        self,
+        v_max: float,
+        v_min: float,
+        horizon: int,
+        delta_v_max: float = 1.0,
+    ):
+        self.v_max = v_max
+        self.v_min = v_min
         self.horizon = horizon
+        self.delta_v_max = delta_v_max
+        self._solver = self._find_ipopt()
 
-    def _risk(self, belief: np.ndarray) -> float:
-        return float(sum(belief[i] * SPEED_PENALTY[i] for i in range(len(belief))))
+    @staticmethod
+    def _find_ipopt():
+        """Return a ready IPOPT SolverFactory, checking PATH then IDAES install."""
+        if shutil.which("ipopt"):
+            return SolverFactory("ipopt")
+        from pathlib import Path as _Path
+        idaes_ipopt = _Path.home() / "AppData" / "Local" / "idaes" / "bin" / "ipopt.exe"
+        if idaes_ipopt.exists():
+            return SolverFactory("ipopt", executable=str(idaes_ipopt))
+        raise RuntimeError(
+            "IPOPT not found on PATH or in IDAES install location. "
+            "Install via: idaes get-extensions"
+        )
+
+    def _build_and_solve(self, v_safe: list) -> list:
+        """
+        Build and solve the Pyomo QP for a given v_safe trajectory.
+
+        Parameters
+        ----------
+        v_safe : list[float]
+            Target safe speed for each look-ahead step (length == horizon).
+
+        Returns
+        -------
+        list[float]
+            Optimal speed trajectory of length horizon.
+        """
+        H = len(v_safe)
+        m = ConcreteModel()
+
+        m.speed = Var(range(H), bounds=(self.v_min, self.v_max))
+
+        m.obj = Objective(
+            expr=sum((m.speed[t] - v_safe[t]) ** 2 for t in range(H)),
+            sense=minimize,
+        )
+
+        m.accel_up = Constraint(
+            range(H - 1),
+            rule=lambda m, t: m.speed[t + 1] - m.speed[t] <= self.delta_v_max,
+        )
+        m.accel_dn = Constraint(
+            range(H - 1),
+            rule=lambda m, t: m.speed[t] - m.speed[t + 1] <= self.delta_v_max,
+        )
+
+        self._solver.solve(m, tee=False)
+
+        return [float(m.speed[t].value) for t in range(H)]
 
     def compute_speed(
         self,
-        trackers: list[BayesianSegmentTracker],
+        trackers: list,
         current_seg: int,
-    ) -> tuple[float, str]:
+    ) -> tuple:
         """
-        Returns (commanded_speed_fps, alert_string).
-        Looks ahead `horizon` segments from current_seg.
+        Compute the commanded speed for current_seg via Pyomo MPC.
+
+        Parameters
+        ----------
+        trackers : list[BayesianSegmentTracker]
+            One tracker per track segment.
+        current_seg : int
+            Index of the segment the train is currently on.
+
+        Returns
+        -------
+        (commanded_speed_fps, alert_string)
         """
-        n_segs  = len(trackers)
-        look_ahead_risk = 0.0
-        worst_seg_risk  = 0.0
+        n_segs = len(trackers)
+        v_safe = [
+            self.v_max * self.V_SAFE_MULT[
+                trackers[(current_seg + t) % n_segs].map_state()
+            ]
+            for t in range(self.horizon)
+        ]
 
-        for h in range(self.horizon):
-            idx  = (current_seg + h) % n_segs
-            risk = self._risk(trackers[idx].belief)
-            look_ahead_risk += risk * (0.8 ** h)   # discount future segments
-            worst_seg_risk   = max(worst_seg_risk, risk)
+        speeds = self._build_and_solve(v_safe)
+        commanded = round(float(speeds[0]), 3)
+        commanded = max(self.v_min, min(self.v_max, commanded))  # safety clamp
 
-        # Speed based on worst segment in horizon (conservative safety policy)
-        speed = self.v_max * (1.0 - worst_seg_risk)
-        speed = max(self.v_min, min(self.v_max, speed))
-
-        # Alert logic
         map_state = trackers[current_seg].map_state()
         if map_state == 2:
-            alert = "DANGER  – Damaged track detected. Speed reduced. Whistle!"
+            alert = "DANGER  \u2013 Damaged track detected. Speed reduced. Whistle!"
         elif map_state == 1:
-            alert = "WARNING – Degraded track. Proceed with caution."
+            alert = "WARNING \u2013 Degraded track. Proceed with caution."
         else:
             alert = "CLEAR"
 
-        return round(speed, 3), alert
+        return commanded, alert
+
+
+# Backward-compatibility alias -- visualization_3d.py imports this name
+MPCSpeedController = PyomoMPCController
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -257,7 +331,7 @@ class Simulation:
         self.trackers = [BayesianSegmentTracker() for _ in range(self.n_segments)]
 
         # MPC controller
-        self.mpc = MPCSpeedController(V_MAX_FPS, V_MIN_FPS, MPC_HORIZON)
+        self.mpc = PyomoMPCController(V_MAX_FPS, V_MIN_FPS, MPC_HORIZON)
 
         # History for plotting
         # belief_history[pass][segment] = belief array
