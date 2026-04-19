@@ -1,6 +1,7 @@
 import { useTwinStore } from '../store/twinStore'
 import { SegmentCard } from './SegmentCard'
 import { AlertBanner } from './AlertBanner'
+import { TrackConfigurator } from './TrackConfigurator'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
@@ -43,6 +44,9 @@ export function TrackDashboard() {
           </div>
         )}
       </section>
+
+      {/* Track configurator */}
+      <TrackConfigurator />
 
       {/* Speed history chart */}
       {tickHistory.length > 1 && (

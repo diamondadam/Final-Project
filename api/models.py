@@ -23,6 +23,9 @@ class CorrectionRequest(BaseModel):
     segment_id: int
     state: int                   # 0=Healthy 1=Degraded 2=Damaged
 
+class TrackConfigRequest(BaseModel):
+    track_config: list[int]      # e.g. [0, 1, 2, 1, 0] — one entry per segment
+
 
 def twin_state_to_response(state) -> TwinStateResponse:
     """Convert a TwinState dataclass to its Pydantic response model."""

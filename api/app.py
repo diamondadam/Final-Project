@@ -30,7 +30,7 @@ _ROOT = str(Path(__file__).parent.parent)
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from api.models import TwinStateResponse, CorrectionRequest, twin_state_to_response
+from api.models import TwinStateResponse, CorrectionRequest, TrackConfigRequest, twin_state_to_response
 from api.websocket import WebSocketManager
 from digital_twin_v2.orchestrator import DigitalTwin
 from integrations.work_orders import WorkOrderClient
@@ -144,6 +144,21 @@ async def apply_correction(req: CorrectionRequest):
 async def reset():
     twin.reset()
     return {"ok": True}
+
+
+@app.post("/config")
+async def set_config(req: TrackConfigRequest):
+    if not req.track_config:
+        raise HTTPException(status_code=422, detail="track_config must not be empty")
+    if any(s not in (0, 1, 2) for s in req.track_config):
+        raise HTTPException(status_code=422, detail="Each segment state must be 0, 1, or 2")
+    twin.set_track_config(req.track_config)
+    return {"ok": True, "track_config": req.track_config}
+
+
+@app.get("/config")
+async def get_config():
+    return {"track_config": twin.track_config}
 
 
 @app.websocket("/ws")

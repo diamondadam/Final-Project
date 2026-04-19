@@ -16,6 +16,7 @@ from controller.bayesian import BayesianSegmentTracker  # noqa: E402
 from controller.mpc import PyomoMPCController           # noqa: E402
 from sensors.base import BaseSensorSimulator            # noqa: E402
 from digital_twin_v2.state import TwinState, SegmentState  # noqa: E402
+from digital_twin_v2.constants import CLASS_NAMES          # noqa: E402
 
 if TYPE_CHECKING:
     from integrations.work_orders import WorkOrderClient
@@ -63,6 +64,11 @@ class DigitalTwin:
         print(f"DigitalTwin: loading KNN model from {model_path}")
         self._model = joblib.load(model_path)   # sklearn Pipeline (scaler + KNN)
 
+        # sklearn sorts classes alphabetically — build an index to reorder
+        # predict_proba() output to match CLASS_NAMES = [Healthy, Degraded, Damaged]
+        clf_classes = list(self._model.classes_)
+        self._class_order = [clf_classes.index(name) for name in CLASS_NAMES]
+
         self.trackers: list[BayesianSegmentTracker] = [
             BayesianSegmentTracker() for _ in range(self.n_segments)
         ]
@@ -85,8 +91,11 @@ class DigitalTwin:
         # OBSERVE
         feat_vec = self.simulator.get_reading(seg, true_state)
 
-        # ORIENT — Pipeline handles scaling internally
-        likelihood = self._model.predict_proba(feat_vec.reshape(1, -1))[0]
+        # ORIENT — Pipeline handles scaling internally.
+        # Reorder to CLASS_NAMES order [Healthy, Degraded, Damaged] since sklearn
+        # returns probabilities in alphabetical class order [Damaged, Degraded, Healthy].
+        raw = self._model.predict_proba(feat_vec.reshape(1, -1))[0]
+        likelihood = raw[self._class_order]
 
         # DECIDE
         self.trackers[seg].update(likelihood)
@@ -129,6 +138,17 @@ class DigitalTwin:
         """Reset all Bayesian trackers to uniform priors and restart tick counter."""
         for tracker in self.trackers:
             tracker.reset()
+        self._tick = 0
+        self._current_seg = 0
+        self._state = None
+        self._prev_map_states = [None] * self.n_segments
+
+    def set_track_config(self, config: list[int]) -> None:
+        """Hot-swap the track configuration and reset all state."""
+        self.track_config = list(config)
+        self.n_segments = len(config)
+        self.simulator.set_track_config(config)
+        self.trackers = [BayesianSegmentTracker() for _ in range(self.n_segments)]
         self._tick = 0
         self._current_seg = 0
         self._state = None
