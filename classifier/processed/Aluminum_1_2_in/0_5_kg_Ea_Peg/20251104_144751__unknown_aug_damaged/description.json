@@ -1,0 +1,67 @@
+{
+  "run_id": "20251104_144751__unknown_aug_damaged",
+  "source_run_id": "20251104_144751__unknown",
+  "material": "Aluminum_1_2_in",
+  "condition": "0_5_kg_Ea_Peg",
+  "health_label": "Damaged",
+  "health_label_source": "synthetic_damaged_spikes",
+  "cruise_rms_g": 0.07994,
+  "is_augmented": true,
+  "augmentation": {
+    "tier": "damaged",
+    "amplitude_g": 0.65,
+    "sigma_ms": 15,
+    "spike_count": 7,
+    "spikes": [
+      {
+        "row_index": 9307,
+        "time_ms": 2901881,
+        "amplitude_g": 0.65,
+        "sign": 1
+      },
+      {
+        "row_index": 6389,
+        "time_ms": 2898954,
+        "amplitude_g": 0.65,
+        "sign": 1
+      },
+      {
+        "row_index": 7098,
+        "time_ms": 2899682,
+        "amplitude_g": 0.65,
+        "sign": 1
+      },
+      {
+        "row_index": 7452,
+        "time_ms": 2900029,
+        "amplitude_g": 0.65,
+        "sign": -1
+      },
+      {
+        "row_index": 7803,
+        "time_ms": 2900376,
+        "amplitude_g": 0.65,
+        "sign": -1
+      },
+      {
+        "row_index": 8483,
+        "time_ms": 2901060,
+        "amplitude_g": 0.65,
+        "sign": -1
+      },
+      {
+        "row_index": 8844,
+        "time_ms": 2901423,
+        "amplitude_g": 0.65,
+        "sign": -1
+      }
+    ],
+    "random_seed": 42
+  },
+  "weight_kg": 0.5,
+  "weight_location": null,
+  "weight_distribution": "each_peg",
+  "speed_fps": null,
+  "load_level": null,
+  "is_unclipped": false
+}

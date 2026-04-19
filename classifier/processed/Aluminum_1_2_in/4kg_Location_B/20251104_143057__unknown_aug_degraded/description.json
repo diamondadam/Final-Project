@@ -1,0 +1,55 @@
+{
+  "run_id": "20251104_143057__unknown_aug_degraded",
+  "source_run_id": "20251104_143057__unknown",
+  "material": "Aluminum_1_2_in",
+  "condition": "4kg_Location_B",
+  "health_label": "Degraded",
+  "health_label_source": "synthetic_degraded_spikes",
+  "cruise_rms_g": 0.0735,
+  "is_augmented": true,
+  "augmentation": {
+    "tier": "degraded",
+    "amplitude_g": 0.3,
+    "sigma_ms": 8,
+    "spike_count": 5,
+    "spikes": [
+      {
+        "row_index": 8659,
+        "time_ms": 1888406,
+        "amplitude_g": 0.3,
+        "sign": 1
+      },
+      {
+        "row_index": 8896,
+        "time_ms": 1888647,
+        "amplitude_g": 0.3,
+        "sign": 1
+      },
+      {
+        "row_index": 7712,
+        "time_ms": 1887467,
+        "amplitude_g": 0.3,
+        "sign": 1
+      },
+      {
+        "row_index": 7537,
+        "time_ms": 1887276,
+        "amplitude_g": 0.3,
+        "sign": -1
+      },
+      {
+        "row_index": 6277,
+        "time_ms": 1886031,
+        "amplitude_g": 0.3,
+        "sign": 1
+      }
+    ],
+    "random_seed": 42
+  },
+  "weight_kg": 4.0,
+  "weight_location": "B",
+  "weight_distribution": null,
+  "speed_fps": null,
+  "load_level": null,
+  "is_unclipped": false
+}

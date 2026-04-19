@@ -1,0 +1,17 @@
+{
+  "run_id": "20251104_165816__unknown",
+  "source_run_id": "20251104_165816__unknown",
+  "material": "Aluminum_3_8_in",
+  "condition": "4_kg_Location_C_Unclipped_1_5fps",
+  "health_label": "Degraded",
+  "health_label_source": "unclipped_rms_0.0522g",
+  "cruise_rms_g": 0.05218,
+  "is_augmented": false,
+  "augmentation": null,
+  "weight_kg": 4.0,
+  "weight_location": "C",
+  "weight_distribution": null,
+  "speed_fps": 1.5,
+  "load_level": null,
+  "is_unclipped": true
+}

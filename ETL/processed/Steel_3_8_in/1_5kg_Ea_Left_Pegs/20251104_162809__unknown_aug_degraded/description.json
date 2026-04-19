@@ -1,0 +1,49 @@
+{
+  "run_id": "20251104_162809__unknown_aug_degraded",
+  "source_run_id": "20251104_162809__unknown",
+  "material": "Steel_3_8_in",
+  "condition": "1_5kg_Ea_Left_Pegs",
+  "health_label": "Degraded",
+  "health_label_source": "synthetic_degraded_spikes",
+  "cruise_rms_g": 0.08819,
+  "is_augmented": true,
+  "augmentation": {
+    "tier": "degraded",
+    "amplitude_g": 0.3,
+    "sigma_ms": 8,
+    "spike_count": 4,
+    "spikes": [
+      {
+        "row_index": 9213,
+        "time_ms": 1205475,
+        "amplitude_g": 0.3,
+        "sign": -1
+      },
+      {
+        "row_index": 6497,
+        "time_ms": 1202740,
+        "amplitude_g": 0.3,
+        "sign": -1
+      },
+      {
+        "row_index": 8528,
+        "time_ms": 1204780,
+        "amplitude_g": 0.3,
+        "sign": 1
+      },
+      {
+        "row_index": 8220,
+        "time_ms": 1204479,
+        "amplitude_g": 0.3,
+        "sign": 1
+      }
+    ],
+    "random_seed": 42
+  },
+  "weight_kg": 1.5,
+  "weight_location": null,
+  "weight_distribution": "each_left_peg",
+  "speed_fps": null,
+  "load_level": null,
+  "is_unclipped": false
+}

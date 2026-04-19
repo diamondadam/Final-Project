@@ -1,0 +1,55 @@
+{
+  "run_id": "20251104_162433__unknown_aug_damaged",
+  "source_run_id": "20251104_162433__unknown",
+  "material": "Steel_3_8_in",
+  "condition": "2kg_Ea_A_Left_C_Right",
+  "health_label": "Damaged",
+  "health_label_source": "synthetic_damaged_spikes",
+  "cruise_rms_g": 0.09031,
+  "is_augmented": true,
+  "augmentation": {
+    "tier": "damaged",
+    "amplitude_g": 0.65,
+    "sigma_ms": 15,
+    "spike_count": 5,
+    "spikes": [
+      {
+        "row_index": 8305,
+        "time_ms": 988986,
+        "amplitude_g": 0.65,
+        "sign": 1
+      },
+      {
+        "row_index": 7644,
+        "time_ms": 988324,
+        "amplitude_g": 0.65,
+        "sign": 1
+      },
+      {
+        "row_index": 6447,
+        "time_ms": 987123,
+        "amplitude_g": 0.65,
+        "sign": -1
+      },
+      {
+        "row_index": 9035,
+        "time_ms": 989712,
+        "amplitude_g": 0.65,
+        "sign": 1
+      },
+      {
+        "row_index": 6795,
+        "time_ms": 987470,
+        "amplitude_g": 0.65,
+        "sign": 1
+      }
+    ],
+    "random_seed": 42
+  },
+  "weight_kg": 2.0,
+  "weight_location": null,
+  "weight_distribution": "A_left_C_right",
+  "speed_fps": null,
+  "load_level": null,
+  "is_unclipped": false
+}
