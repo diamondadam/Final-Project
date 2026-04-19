@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, asdict
+import uuid
+from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 
 import httpx
@@ -22,6 +23,77 @@ class WorkOrderPayload:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             **asdict(self),
         }
+
+
+@dataclass
+class WorkOrder:
+    id: str
+    segment_id: int
+    severity: str                    # "DEGRADED" | "DAMAGED"
+    belief: list[float]
+    confidence: float
+    commanded_speed_fps: float
+    alert_message: str
+    created_at: str
+    status: str = "OPEN"             # "OPEN" | "COMPLETED"
+    completed_at: str | None = None
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+class WorkOrderStore:
+    """In-memory store for local work order tracking."""
+
+    def __init__(self) -> None:
+        self._orders: dict[str, WorkOrder] = {}
+
+    def find_open(self, segment_id: int) -> WorkOrder | None:
+        """Return the open work order for a segment, if one exists."""
+        for wo in self._orders.values():
+            if wo.segment_id == segment_id and wo.status == "OPEN":
+                return wo
+        return None
+
+    def add_or_escalate(self, payload: WorkOrderPayload) -> WorkOrder:
+        """Create a new work order, or escalate an existing open one for the same segment."""
+        existing = self.find_open(payload.segment_id)
+        if existing is not None:
+            existing.severity = payload.severity
+            existing.belief = list(payload.belief)
+            existing.confidence = payload.confidence
+            existing.commanded_speed_fps = payload.commanded_speed_fps
+            existing.alert_message = payload.alert_message
+            return existing
+        return self.add(payload)
+
+    def add(self, payload: WorkOrderPayload) -> WorkOrder:
+        wo = WorkOrder(
+            id=str(uuid.uuid4()),
+            segment_id=payload.segment_id,
+            severity=payload.severity,
+            belief=list(payload.belief),
+            confidence=payload.confidence,
+            commanded_speed_fps=payload.commanded_speed_fps,
+            alert_message=payload.alert_message,
+            created_at=datetime.now(timezone.utc).isoformat(),
+        )
+        self._orders[wo.id] = wo
+        return wo
+
+    def complete(self, order_id: str) -> WorkOrder | None:
+        wo = self._orders.get(order_id)
+        if wo is None or wo.status == "COMPLETED":
+            return None
+        wo.status = "COMPLETED"
+        wo.completed_at = datetime.now(timezone.utc).isoformat()
+        return wo
+
+    def get(self, order_id: str) -> WorkOrder | None:
+        return self._orders.get(order_id)
+
+    def list_all(self) -> list[WorkOrder]:
+        return sorted(self._orders.values(), key=lambda w: w.created_at, reverse=True)
 
 
 class WorkOrderClient:

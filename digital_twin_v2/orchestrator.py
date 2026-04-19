@@ -19,7 +19,7 @@ from digital_twin_v2.state import TwinState, SegmentState  # noqa: E402
 from digital_twin_v2.constants import CLASS_NAMES          # noqa: E402
 
 if TYPE_CHECKING:
-    from integrations.work_orders import WorkOrderClient
+    from integrations.work_orders import WorkOrderClient, WorkOrderStore
 
 _CLASSIFIER_DIR = Path(__file__).parent.parent / "classifier"
 _MODEL_PATH = _CLASSIFIER_DIR / "output" / "model_knn.joblib"
@@ -51,6 +51,7 @@ class DigitalTwin:
         simulator: BaseSensorSimulator,
         model_path: Path | str = _MODEL_PATH,
         work_order_client: "WorkOrderClient | None" = None,
+        work_order_store: "WorkOrderStore | None" = None,
         v_max: float = V_MAX_FPS,
         v_min: float = V_MIN_FPS,
         mpc_horizon: int = MPC_HORIZON,
@@ -60,6 +61,7 @@ class DigitalTwin:
         self.simulator = simulator
         self.simulator.set_track_config(track_config)
         self._work_order_client = work_order_client
+        self._work_order_store = work_order_store
 
         print(f"DigitalTwin: loading KNN model from {model_path}")
         self._model = joblib.load(model_path)   # sklearn Pipeline (scaler + KNN)
@@ -143,6 +145,24 @@ class DigitalTwin:
         self._state = None
         self._prev_map_states = [None] * self.n_segments
 
+    def reset_segment(self, segment_id: int) -> None:
+        """Reset a single segment's Bayesian tracker to uniform prior."""
+        if 0 <= segment_id < self.n_segments:
+            self.trackers[segment_id].reset()
+            self._prev_map_states[segment_id] = None
+
+    def repair_segment(self, segment_id: int) -> None:
+        """Mark a segment as repaired: set true state to Healthy and reset belief.
+
+        Without updating track_config the simulator keeps returning degraded/damaged
+        readings and the tracker would immediately re-converge to the old state.
+        """
+        if 0 <= segment_id < self.n_segments:
+            self.track_config[segment_id] = 0   # Healthy
+            self.simulator.set_track_config(self.track_config)
+            self.trackers[segment_id].reset()
+            self._prev_map_states[segment_id] = None
+
     def set_track_config(self, config: list[int]) -> None:
         """Hot-swap the track configuration and reset all state."""
         self.track_config = list(config)
@@ -161,7 +181,7 @@ class DigitalTwin:
     async def _maybe_submit_work_order(
         self, seg: int, seg_state: SegmentState
     ) -> None:
-        if self._work_order_client is None:
+        if self._work_order_client is None and self._work_order_store is None:
             return
 
         current_map = seg_state.map_state
@@ -177,9 +197,12 @@ class DigitalTwin:
                 commanded_speed_fps=self._state.commanded_speed_fps,
                 alert_message=self._state.alert,
             )
-            try:
-                await self._work_order_client.submit(payload)
-            except Exception as exc:
-                print(f"  [WARN] Work order submission failed for seg {seg}: {exc}")
+            if self._work_order_store is not None:
+                self._work_order_store.add_or_escalate(payload)
+            if self._work_order_client is not None:
+                try:
+                    await self._work_order_client.submit(payload)
+                except Exception as exc:
+                    print(f"  [WARN] Work order submission failed for seg {seg}: {exc}")
 
         self._prev_map_states[seg] = current_map

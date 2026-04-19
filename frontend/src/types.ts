@@ -16,6 +16,19 @@ export interface TwinState {
   segments: SegmentState[]
 }
 
+export interface WorkOrder {
+  id: string
+  segment_id: number
+  severity: 'DEGRADED' | 'DAMAGED'
+  belief: [number, number, number]
+  confidence: number
+  commanded_speed_fps: number
+  alert_message: string
+  created_at: string
+  status: 'OPEN' | 'COMPLETED'
+  completed_at: string | null
+}
+
 export const CLASS_COLORS = {
   Healthy:  { bg: 'bg-emerald-500',  text: 'text-emerald-400',  hex: '#10b981' },
   Degraded: { bg: 'bg-amber-500',    text: 'text-amber-400',    hex: '#f59e0b' },

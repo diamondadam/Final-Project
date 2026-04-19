@@ -33,7 +33,7 @@ if _ROOT not in sys.path:
 from api.models import TwinStateResponse, CorrectionRequest, TrackConfigRequest, twin_state_to_response
 from api.websocket import WebSocketManager
 from digital_twin_v2.orchestrator import DigitalTwin
-from integrations.work_orders import WorkOrderClient
+from integrations.work_orders import WorkOrderClient, WorkOrderStore
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -62,6 +62,7 @@ def _build_simulator():
 # ---------------------------------------------------------------------------
 
 ws_manager = WebSocketManager()
+wo_store = WorkOrderStore()
 twin: DigitalTwin | None = None
 _ooda_task: asyncio.Task | None = None
 
@@ -94,6 +95,7 @@ async def lifespan(app: FastAPI):
         track_config=track_config,
         simulator=simulator,
         work_order_client=work_order_client,
+        work_order_store=wo_store,
     )
 
     interval = _tick_interval()
@@ -159,6 +161,20 @@ async def set_config(req: TrackConfigRequest):
 @app.get("/config")
 async def get_config():
     return {"track_config": twin.track_config}
+
+
+@app.get("/work-orders")
+async def list_work_orders():
+    return {"work_orders": [wo.to_dict() for wo in wo_store.list_all()]}
+
+
+@app.post("/work-orders/{order_id}/complete")
+async def complete_work_order(order_id: str):
+    wo = wo_store.complete(order_id)
+    if wo is None:
+        raise HTTPException(status_code=404, detail="Work order not found or already completed")
+    twin.repair_segment(wo.segment_id)
+    return {"ok": True, "work_order": wo.to_dict()}
 
 
 @app.websocket("/ws")
