@@ -1,33 +1,30 @@
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .base import BaseSensorSimulator
 
-if TYPE_CHECKING:
-    from simulation import DataPool
+_ROOT = str(Path(__file__).parent.parent)
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 
-# Ensure digital_twin/ is importable when fitting from a live DataPool
-sys.path.insert(0, str(Path(__file__).parent.parent / "digital_twin"))
+_N_CLASSES = 3
 
 
 class SyntheticSensorSimulator(BaseSensorSimulator):
     """
-    Generates feature vectors from per-class Gaussian models.
+    Generates 33-feature vectors from per-class Gaussian models.
 
-    Parameters are fit from real DataPool statistics (per-class mean and
-    per-feature standard deviation). Sampling is independent per feature
-    (diagonal covariance), which is stable even with few training runs.
+    Parameters are fit from the classifier module's processed dataset statistics
+    (per-class mean and per-feature standard deviation). Sampling is independent
+    per feature (diagonal covariance), which is stable even with few training runs.
 
     Use this for:
     - edge-case / stress testing (noise_scale > 1.0 amplifies variance)
-    - running without the data/ directory (load pre-saved .npz parameters)
+    - running without the classifier/processed/ directory (load pre-saved .npz)
     - scenarios with no matching real runs (e.g. mixed-severity segments)
     """
-
-    _N_CLASSES = 3
 
     def __init__(
         self,
@@ -36,8 +33,8 @@ class SyntheticSensorSimulator(BaseSensorSimulator):
         noise_scale: float = 1.0,
         seed: int = 42,
     ) -> None:
-        self._means = means          # {state_label: (n_features,) array}
-        self._stds = stds            # {state_label: (n_features,) array}
+        self._means = means
+        self._stds = stds
         self._noise_scale = noise_scale
         self._rng = np.random.default_rng(seed)
         self._track_config: list[int] = []
@@ -60,31 +57,33 @@ class SyntheticSensorSimulator(BaseSensorSimulator):
     # ------------------------------------------------------------------
 
     @classmethod
-    def fit_from_data_pool(
+    def fit_from_dataset(
         cls,
-        pool: "DataPool",
         noise_scale: float = 1.0,
         seed: int = 42,
     ) -> "SyntheticSensorSimulator":
         """
-        Fit class-conditional Gaussian parameters from a loaded DataPool.
+        Fit class-conditional Gaussian parameters from the classifier dataset.
 
-        Called once at startup when data/ is available. Use save() afterward
-        to persist parameters so the simulator can be loaded without data/.
+        Calls classifier.train_classifiers.load_dataset() internally.
+        Use save() afterward to persist parameters for offline use.
         """
-        X, y = pool.all_features_and_labels()
+        from classifier.train_classifiers import load_dataset  # noqa: PLC0415
+        from digital_twin_v2.constants import LABEL_TO_INT     # noqa: PLC0415
+
+        X, y_str, _ = load_dataset()
         means: dict[int, np.ndarray] = {}
         stds: dict[int, np.ndarray] = {}
 
-        for state in range(cls._N_CLASSES):
-            mask = y == state
+        for state in range(_N_CLASSES):
+            label_str = list(LABEL_TO_INT.keys())[state]
+            mask = y_str == label_str
             if not mask.any():
                 raise ValueError(
-                    f"DataPool has no samples for state {state}. "
+                    f"Dataset has no samples for class '{label_str}'. "
                     "Cannot fit SyntheticSensorSimulator."
                 )
             means[state] = X[mask].mean(axis=0)
-            # Small floor prevents zero-std features from collapsing to a point
             stds[state] = X[mask].std(axis=0) + 1e-8
 
         return cls(means=means, stds=stds, noise_scale=noise_scale, seed=seed)
@@ -98,8 +97,8 @@ class SyntheticSensorSimulator(BaseSensorSimulator):
         path = Path(path)
         np.savez(
             path,
-            **{f"means_{s}": self._means[s] for s in range(self._N_CLASSES)},
-            **{f"stds_{s}": self._stds[s] for s in range(self._N_CLASSES)},
+            **{f"means_{s}": self._means[s] for s in range(_N_CLASSES)},
+            **{f"stds_{s}": self._stds[s] for s in range(_N_CLASSES)},
         )
         print(f"SyntheticSensorSimulator parameters saved -> {path}")
 
@@ -110,9 +109,9 @@ class SyntheticSensorSimulator(BaseSensorSimulator):
         noise_scale: float = 1.0,
         seed: int = 42,
     ) -> "SyntheticSensorSimulator":
-        """Load pre-saved parameters without requiring the data/ directory."""
+        """Load pre-saved parameters without requiring the classifier/processed/ directory."""
         path = Path(path)
         data = np.load(path)
-        means = {s: data[f"means_{s}"] for s in range(cls._N_CLASSES)}
-        stds = {s: data[f"stds_{s}"] for s in range(cls._N_CLASSES)}
+        means = {s: data[f"means_{s}"] for s in range(_N_CLASSES)}
+        stds = {s: data[f"stds_{s}"] for s in range(_N_CLASSES)}
         return cls(means=means, stds=stds, noise_scale=noise_scale, seed=seed)
