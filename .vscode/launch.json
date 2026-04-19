@@ -32,6 +32,16 @@
       "justMyCode": true
     },
     {
+      "name": "Frontend Dev Server (Vite)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\npm.cmd",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
       "name": "Train Classifier (KNN + GBM)",
       "type": "debugpy",
       "request": "launch",
