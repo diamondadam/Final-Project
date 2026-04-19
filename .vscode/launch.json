@@ -1,0 +1,67 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API Server (uvicorn)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "TRACK_CONFIG": "0,1,2,1,0",
+        "SIMULATOR_TYPE": "csv",
+        "TICK_INTERVAL_S": "1.0"
+      },
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
+      "name": "API Server — Synthetic Simulator",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "TRACK_CONFIG": "0,1,2,1,0",
+        "SIMULATOR_TYPE": "synthetic",
+        "TICK_INTERVAL_S": "1.0"
+      },
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
+      "name": "Train Classifier (KNN + GBM)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/classifier/train_classifiers.py",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Simulation v1 (OODA + Pyomo MPC)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/digital_twin_v1/simulation.py",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Diagnose Frequencies",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/digital_twin_v1/diagnose_frequencies.py",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Safety Stop Demo",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/week10example/train_stop_decision.py",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    }
+  ]
+}
