@@ -2,13 +2,12 @@ import { useTwinStore } from '../store/twinStore'
 import { SegmentCard } from './SegmentCard'
 import { AlertBanner } from './AlertBanner'
 import { TrackConfigurator } from './TrackConfigurator'
-import { WorkOrderPanel } from './WorkOrderPanel'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 
 export function TrackDashboard() {
-  const { state, tickHistory } = useTwinStore()
+  const { state, tickHistory, workOrders } = useTwinStore()
 
   return (
     <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto">
@@ -36,6 +35,7 @@ export function TrackDashboard() {
                 key={seg.id}
                 segment={seg}
                 isActive={seg.id === state.train_segment}
+                workOrder={workOrders.find(w => w.segment_id === seg.id && w.status === 'OPEN') ?? null}
               />
             ))}
           </div>
@@ -49,8 +49,6 @@ export function TrackDashboard() {
       {/* Track configurator */}
       <TrackConfigurator />
 
-      {/* Work orders */}
-      <WorkOrderPanel />
 
       {/* Speed history chart */}
       {tickHistory.length > 1 && (
