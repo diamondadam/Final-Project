@@ -34,6 +34,9 @@ api/                           ← FastAPI server (NEW)
   websocket.py                 ← WebSocketManager — fan-out to all Unreal clients
   models.py                    ← Pydantic schemas (request + response)
   __init__.py
+integrations/                  ← external system clients (NEW)
+  work_orders.py               ← WorkOrderClient — POSTs to external work order API on state transitions
+  __init__.py
 ```
 
 ---
@@ -57,13 +60,15 @@ api/                           ← FastAPI server (NEW)
                  │                    → TwinState                               │
                  └──────────────────────────────────┬───────────────────────────┘
                                                 │
-                                           api/app.py
-                                        (FastAPI server)
-                                                │
-                                    WebSocket broadcast
-                                                │
-                                        Unreal Engine
-                                    (visualization client)
+                              ┌─────────────────┴──────────────────┐
+                              │                                     │
+                         api/app.py                    integrations/work_orders.py
+                      (FastAPI server)                 (fired on MAP state transition
+                              │                         to Degraded or Damaged only)
+                  WebSocket broadcast                               │
+                              │                         External Work Order API
+                      Unreal Engine                      (POST /work-orders)
+                  (visualization client)
 ```
 
 ---
@@ -186,12 +191,18 @@ class TwinState:
 
 ### `digital_twin/orchestrator.py` — DigitalTwin
 
-Owns the OODA loop. Composes `SensorSimulator`, classifier, `BayesianSegmentTracker`
-instances, and `PyomoMPCController`. Produces a `TwinState` on every `step()` call.
+Owns the OODA loop. Composes `BaseSensorSimulator`, classifier, `BayesianSegmentTracker`
+instances, `PyomoMPCController`, and `WorkOrderClient`. Produces a `TwinState` each tick.
 
 ```python
 class DigitalTwin:
-    def __init__(self, track_config: list[int], seed: int = 42): ...
+    def __init__(
+        self,
+        track_config: list[int],
+        simulator: BaseSensorSimulator,
+        work_order_client: WorkOrderClient | None = None,
+        seed: int = 42,
+    ): ...
 
     async def step(self) -> TwinState:
         """Advance one OODA tick (one segment observation). Returns new state."""
@@ -207,10 +218,11 @@ class DigitalTwin:
 ```
 
 Internally `step()` does:
-1. **Observe** — `SensorSimulator.get_reading(current_seg, true_state)`
+1. **Observe** — `simulator.get_reading(current_seg, true_state)`
 2. **Orient** — Kalman filter → feature extraction → `clf.predict_proba()`
 3. **Decide** — `BayesianSegmentTracker.update(proba)` → `MPCController.compute_speed()`
 4. **Act** — advance `train_segment` counter, emit `TwinState`
+5. **Alert** — if MAP state *changed* to Degraded or Damaged this tick, fire `WorkOrderClient.submit()` asynchronously (fire-and-forget, does not block the loop)
 
 ---
 
@@ -272,6 +284,55 @@ class CorrectionRequest(BaseModel):
 
 ---
 
+### `integrations/work_orders.py` — WorkOrderClient
+
+Fires a work order to the external maintenance system whenever a segment's MAP state
+*transitions into* Degraded or Damaged. Transitions back to Healthy do not create
+work orders (a human closes them). Only state changes trigger a call — not every tick
+— to avoid flooding the external system.
+
+```python
+class WorkOrderClient:
+    def __init__(self, base_url: str, api_key: str, timeout_s: float = 5.0): ...
+
+    async def submit(self, order: WorkOrderPayload) -> None:
+        """POST the work order. Retries once on transient failure; logs and
+        continues on persistent failure — never raises into the OODA loop."""
+```
+
+**Work order payload** (POSTed as JSON to the external API):
+
+```json
+{
+  "source": "rail-digital-twin",
+  "timestamp": "2026-04-19T14:23:01.123Z",
+  "segment_id": 3,
+  "severity": "DAMAGED",
+  "belief": [0.02, 0.08, 0.90],
+  "confidence": 0.90,
+  "commanded_speed_fps": 0.6,
+  "alert_message": "DANGER – Damaged track detected. Speed reduced. Whistle!"
+}
+```
+
+`severity` is `"DEGRADED"` or `"DAMAGED"` — never `"HEALTHY"`. `confidence` is
+`max(belief)` of the MAP state. These field names are fixed; do not rename them
+without coordinating with the external system owner.
+
+**Configuration** — the client is configured via environment variables so credentials
+are never hardcoded:
+
+```
+WORK_ORDER_API_URL=https://maintenance.example.com/api/v1
+WORK_ORDER_API_KEY=<secret>
+WORK_ORDER_TIMEOUT_S=5.0     # optional, default 5
+```
+
+If `WORK_ORDER_API_URL` is unset, `WorkOrderClient` is not instantiated and the
+orchestrator skips work order submission silently (useful for local dev).
+
+---
+
 ## WebSocket Message Contract (Unreal Engine)
 
 Every message the server sends is a JSON object matching `TwinStateResponse`.
@@ -309,6 +370,9 @@ if a smooth health-gradient visual is desired. `alert` drives audio/UI cues.
 | State serialisation | Pydantic + JSON | Self-documenting, easy to consume from Unreal Blueprint HTTP/WS nodes |
 | OODA tick pacing | Server-side timer (asyncio) | Decouples visualisation frame rate from simulation tick rate |
 | Classifier trained on startup | Full dataset retrain in `DigitalTwin.__init__` | Keeps model fresh; startup cost is ~2 s, acceptable |
+| Work order trigger | MAP state *transition* to Degraded/Damaged only | Prevents re-submitting the same work order every tick; transitions back to Healthy do not auto-close (human closes) |
+| Work order delivery | Async fire-and-forget with one retry | Failure in the external system must never stall the OODA loop or block the WebSocket broadcast |
+| Work order credentials | Environment variables (`WORK_ORDER_API_URL`, `WORK_ORDER_API_KEY`) | Keeps secrets out of code; omitting the URL disables integration for local dev |
 
 ---
 
@@ -319,6 +383,7 @@ fastapi
 uvicorn[standard]
 websockets
 pydantic>=2.0
+httpx           # async HTTP client for WorkOrderClient
 # existing:
 numpy scipy scikit-learn matplotlib Pillow pyomo
 ```
