@@ -1,6 +1,7 @@
 ## TODO ##
-# Label Data
-# Fix Classifier
+# DONE - Label Data
+# DONE - Fix Classifier
+# DONE - Uncertainty
 # Create Simulated sensor readings
 # Create API Endpoints for Digital Twin
 # Hook into Unreal Engine for Visualizations

@@ -12,25 +12,40 @@ load_model(name) -> sklearn Pipeline
     (run train_classifiers.py first).
 
 predict(model, daq_path, motion_path) -> dict
-    Run inference on one run. Returns:
-        {
-          "label":        str,           # "Healthy" | "Degraded" | "Damaged"
-          "probabilities": {str: float}, # one entry per class
-        }
+    Point-estimate inference. Returns:
+        {"label": str, "probabilities": {str: float}}
+
+predict_with_uncertainty(model, daq_path, motion_path, sensor_cfg) -> dict
+    Monte Carlo inference using sensor noise from sensor_config.json.
+    Returns label, mean probabilities, confidence, and per-feature
+    noise sensitivity ranked by relative standard deviation.
+
+load_sensor_config(path=None) -> dict
+    Load sensor_config.json (or a custom path).
 
 Example
 -------
     import classifier
-    model = classifier.load_model("knn")
-    result = classifier.predict(model, "path/to/daq.csv", "path/to/arduino.csv")
+
+    model      = classifier.load_model("knn")
+    sensor_cfg = classifier.load_sensor_config()
+
+    # Point estimate
+    result = classifier.predict(model, daq_path, motion_path)
     print(result["label"], result["probabilities"])
+
+    # Uncertainty-aware
+    result = classifier.predict_with_uncertainty(model, daq_path, motion_path, sensor_cfg)
+    print(result["label"], result["confidence"])
+    print(result["feature_uncertainty"][:3])   # top-3 noise-sensitive features
 """
 
 import os as _os
 import joblib as _joblib
 import numpy as _np
 
-from .train_classifiers import extract_features, LABELS  # noqa: F401
+from .train_classifiers import extract_features, LABELS        # noqa: F401
+from .uncertainty import load_sensor_config, predict_with_uncertainty  # noqa: F401
 
 _MODEL_DIR = _os.path.join(_os.path.dirname(__file__), "output")
 _MODEL_FILES = {
@@ -63,7 +78,7 @@ def load_model(name: str):
 
 def predict(model, daq_path: str, motion_path: str) -> dict:
     """
-    Run inference for one run.
+    Point-estimate inference for one run (no uncertainty).
 
     Parameters
     ----------

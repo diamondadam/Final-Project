@@ -1,0 +1,18 @@
+{
+  "model": "enDAQ S3-D40",
+  "variant": "S3-D40",
+  "source_url": "https://endaq.com/products/s3-vibration-sensor-s3-d40?variant=29301756199017",
+  "accelerometer": {
+    "range_g": 40.0,
+    "noise_rms_g": 0.01,
+    "resolution_g": 0.00008,
+    "bandwidth_hz": 300.0,
+    "sampling_rate_hz": 4000.0,
+    "type": "Digital Capacitive"
+  },
+  "uncertainty": {
+    "monte_carlo_trials": 200,
+    "confidence_band_sigma": 1.0,
+    "random_seed": 42
+  }
+}

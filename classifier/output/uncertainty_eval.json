@@ -1,0 +1,1425 @@
+{
+  "knn": [
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.815,
+      "probabilities": {
+        "Damaged": 0.1029,
+        "Degraded": 0.2459,
+        "Healthy": 0.6512
+      },
+      "label_distribution": {
+        "Healthy": 163,
+        "Degraded": 31,
+        "Damaged": 6
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.935,
+      "probabilities": {
+        "Damaged": 0.0621,
+        "Degraded": 0.8734,
+        "Healthy": 0.0645
+      },
+      "label_distribution": {
+        "Degraded": 187,
+        "Damaged": 13
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.84,
+      "probabilities": {
+        "Damaged": 0.1148,
+        "Degraded": 0.1812,
+        "Healthy": 0.704
+      },
+      "label_distribution": {
+        "Healthy": 168,
+        "Damaged": 8,
+        "Degraded": 24
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.93,
+      "probabilities": {
+        "Damaged": 0.0687,
+        "Degraded": 0.8666,
+        "Healthy": 0.0647
+      },
+      "label_distribution": {
+        "Degraded": 186,
+        "Damaged": 14
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 0.53,
+      "probabilities": {
+        "Damaged": 0.4058,
+        "Degraded": 0.2082,
+        "Healthy": 0.386
+      },
+      "label_distribution": {
+        "Damaged": 106,
+        "Healthy": 80,
+        "Degraded": 14
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.815,
+      "probabilities": {
+        "Damaged": 0.0905,
+        "Degraded": 0.2409,
+        "Healthy": 0.6686
+      },
+      "label_distribution": {
+        "Healthy": 163,
+        "Degraded": 28,
+        "Damaged": 9
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9922,
+        "Degraded": 0.0078,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.91,
+      "probabilities": {
+        "Damaged": 0.0795,
+        "Degraded": 0.8614,
+        "Healthy": 0.0591
+      },
+      "label_distribution": {
+        "Degraded": 182,
+        "Damaged": 18
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.75,
+      "probabilities": {
+        "Damaged": 0.0315,
+        "Degraded": 0.341,
+        "Healthy": 0.6275
+      },
+      "label_distribution": {
+        "Healthy": 150,
+        "Degraded": 44,
+        "Damaged": 6
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.945,
+      "probabilities": {
+        "Damaged": 0.0574,
+        "Degraded": 0.9033,
+        "Healthy": 0.0394
+      },
+      "label_distribution": {
+        "Degraded": 189,
+        "Damaged": 11
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.815,
+      "probabilities": {
+        "Damaged": 0.1044,
+        "Degraded": 0.1796,
+        "Healthy": 0.716
+      },
+      "label_distribution": {
+        "Healthy": 163,
+        "Degraded": 29,
+        "Damaged": 8
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9986,
+        "Degraded": 0.0014,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.92,
+      "probabilities": {
+        "Damaged": 0.0746,
+        "Degraded": 0.8727,
+        "Healthy": 0.0527
+      },
+      "label_distribution": {
+        "Degraded": 184,
+        "Damaged": 16
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.775,
+      "probabilities": {
+        "Damaged": 0.0665,
+        "Degraded": 0.2155,
+        "Healthy": 0.718
+      },
+      "label_distribution": {
+        "Healthy": 155,
+        "Degraded": 36,
+        "Damaged": 9
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.89,
+      "probabilities": {
+        "Damaged": 0.1073,
+        "Degraded": 0.853,
+        "Healthy": 0.0397
+      },
+      "label_distribution": {
+        "Degraded": 178,
+        "Damaged": 22
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.79,
+      "probabilities": {
+        "Damaged": 0.0905,
+        "Degraded": 0.2468,
+        "Healthy": 0.6628
+      },
+      "label_distribution": {
+        "Healthy": 158,
+        "Degraded": 38,
+        "Damaged": 4
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9916,
+        "Degraded": 0.0084,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.93,
+      "probabilities": {
+        "Damaged": 0.0714,
+        "Degraded": 0.8868,
+        "Healthy": 0.0417
+      },
+      "label_distribution": {
+        "Degraded": 186,
+        "Damaged": 14
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.56,
+      "probabilities": {
+        "Damaged": 0.0494,
+        "Degraded": 0.4646,
+        "Healthy": 0.486
+      },
+      "label_distribution": {
+        "Healthy": 81,
+        "Degraded": 112,
+        "Damaged": 7
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.485,
+      "probabilities": {
+        "Damaged": 0.0623,
+        "Degraded": 0.448,
+        "Healthy": 0.4896
+      },
+      "label_distribution": {
+        "Healthy": 90,
+        "Degraded": 97,
+        "Damaged": 13
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 0.71,
+      "probabilities": {
+        "Damaged": 0.5355,
+        "Degraded": 0.0884,
+        "Healthy": 0.3762
+      },
+      "label_distribution": {
+        "Damaged": 142,
+        "Healthy": 55,
+        "Degraded": 3
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Healthy",
+      "confidence": 0.52,
+      "probabilities": {
+        "Damaged": 0.4233,
+        "Degraded": 0.0633,
+        "Healthy": 0.5135
+      },
+      "label_distribution": {
+        "Damaged": 93,
+        "Healthy": 104,
+        "Degraded": 3
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.825,
+      "probabilities": {
+        "Damaged": 0.0712,
+        "Degraded": 0.2725,
+        "Healthy": 0.6563
+      },
+      "label_distribution": {
+        "Healthy": 165,
+        "Degraded": 31,
+        "Damaged": 4
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9986,
+        "Degraded": 0.0014,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.95,
+      "probabilities": {
+        "Damaged": 0.0499,
+        "Degraded": 0.9015,
+        "Healthy": 0.0486
+      },
+      "label_distribution": {
+        "Degraded": 190,
+        "Damaged": 10
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.84,
+      "probabilities": {
+        "Damaged": 0.1418,
+        "Degraded": 0.2039,
+        "Healthy": 0.6543
+      },
+      "label_distribution": {
+        "Healthy": 168,
+        "Degraded": 29,
+        "Damaged": 3
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.93,
+      "probabilities": {
+        "Damaged": 0.0607,
+        "Degraded": 0.8853,
+        "Healthy": 0.0539
+      },
+      "label_distribution": {
+        "Degraded": 186,
+        "Damaged": 14
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.765,
+      "probabilities": {
+        "Damaged": 0.2413,
+        "Degraded": 0.099,
+        "Healthy": 0.6596
+      },
+      "label_distribution": {
+        "Healthy": 153,
+        "Damaged": 39,
+        "Degraded": 8
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9952,
+        "Degraded": 0.0048,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.925,
+      "probabilities": {
+        "Damaged": 0.0634,
+        "Degraded": 0.8164,
+        "Healthy": 0.1202
+      },
+      "label_distribution": {
+        "Degraded": 185,
+        "Damaged": 15
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.855,
+      "probabilities": {
+        "Damaged": 0.204,
+        "Degraded": 0.1899,
+        "Healthy": 0.6061
+      },
+      "label_distribution": {
+        "Healthy": 171,
+        "Degraded": 7,
+        "Damaged": 22
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.95,
+      "probabilities": {
+        "Damaged": 0.0565,
+        "Degraded": 0.8662,
+        "Healthy": 0.0774
+      },
+      "label_distribution": {
+        "Degraded": 190,
+        "Damaged": 10
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.815,
+      "probabilities": {
+        "Damaged": 0.0308,
+        "Degraded": 0.2815,
+        "Healthy": 0.6878
+      },
+      "label_distribution": {
+        "Healthy": 163,
+        "Degraded": 33,
+        "Damaged": 4
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.935,
+      "probabilities": {
+        "Damaged": 0.0644,
+        "Degraded": 0.8922,
+        "Healthy": 0.0434
+      },
+      "label_distribution": {
+        "Degraded": 187,
+        "Damaged": 13
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.57,
+      "probabilities": {
+        "Damaged": 0.0566,
+        "Degraded": 0.451,
+        "Healthy": 0.4924
+      },
+      "label_distribution": {
+        "Healthy": 78,
+        "Degraded": 114,
+        "Damaged": 8
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Healthy",
+      "confidence": 0.77,
+      "probabilities": {
+        "Damaged": 0.065,
+        "Degraded": 0.2337,
+        "Healthy": 0.7013
+      },
+      "label_distribution": {
+        "Healthy": 154,
+        "Degraded": 37,
+        "Damaged": 9
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.84,
+      "probabilities": {
+        "Damaged": 0.1563,
+        "Degraded": 0.1803,
+        "Healthy": 0.6635
+      },
+      "label_distribution": {
+        "Healthy": 168,
+        "Degraded": 25,
+        "Damaged": 7
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9937,
+        "Degraded": 0.0063,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.94,
+      "probabilities": {
+        "Damaged": 0.058,
+        "Degraded": 0.8625,
+        "Healthy": 0.0795
+      },
+      "label_distribution": {
+        "Degraded": 188,
+        "Damaged": 12
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.81,
+      "probabilities": {
+        "Damaged": 0.2087,
+        "Degraded": 0.1259,
+        "Healthy": 0.6654
+      },
+      "label_distribution": {
+        "Healthy": 162,
+        "Degraded": 18,
+        "Damaged": 20
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9972,
+        "Degraded": 0.0028,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.95,
+      "probabilities": {
+        "Damaged": 0.0456,
+        "Degraded": 0.871,
+        "Healthy": 0.0834
+      },
+      "label_distribution": {
+        "Degraded": 190,
+        "Damaged": 10
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.8,
+      "probabilities": {
+        "Damaged": 0.1412,
+        "Degraded": 0.2078,
+        "Healthy": 0.651
+      },
+      "label_distribution": {
+        "Healthy": 160,
+        "Degraded": 33,
+        "Damaged": 7
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 0.92,
+      "probabilities": {
+        "Damaged": 0.075,
+        "Degraded": 0.8394,
+        "Healthy": 0.0855
+      },
+      "label_distribution": {
+        "Degraded": 184,
+        "Damaged": 16
+      }
+    }
+  ],
+  "gbm": [
+    {
+      "true": "Healthy",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.9948,
+        "Degraded": 0.0,
+        "Healthy": 0.0052
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0,
+        "Healthy": 1.0
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 0.99,
+      "probabilities": {
+        "Damaged": 0.9916,
+        "Degraded": 0.0011,
+        "Healthy": 0.0073
+      },
+      "label_distribution": {
+        "Damaged": 198,
+        "Healthy": 2
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0,
+        "Healthy": 1.0
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Damaged",
+      "confidence": 0.94,
+      "probabilities": {
+        "Damaged": 0.9324,
+        "Degraded": 0.0002,
+        "Healthy": 0.0674
+      },
+      "label_distribution": {
+        "Damaged": 188,
+        "Healthy": 12
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0,
+        "Healthy": 1.0
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0016,
+        "Healthy": 0.9984
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.995,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0144,
+        "Healthy": 0.9856
+      },
+      "label_distribution": {
+        "Healthy": 199,
+        "Degraded": 1
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.9745,
+        "Healthy": 0.0254
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.9989,
+        "Healthy": 0.0011
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Healthy",
+      "confidence": 0.87,
+      "probabilities": {
+        "Damaged": 0.1259,
+        "Degraded": 0.0001,
+        "Healthy": 0.874
+      },
+      "label_distribution": {
+        "Healthy": 174,
+        "Damaged": 26
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0041,
+        "Healthy": 0.9959
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.5,
+      "probabilities": {
+        "Damaged": 0.4668,
+        "Degraded": 0.0001,
+        "Healthy": 0.5331
+      },
+      "label_distribution": {
+        "Healthy": 100,
+        "Damaged": 100
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 0.71,
+      "probabilities": {
+        "Damaged": 0.272,
+        "Degraded": 0.0,
+        "Healthy": 0.728
+      },
+      "label_distribution": {
+        "Healthy": 142,
+        "Damaged": 58
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0001,
+        "Healthy": 0.9999
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Damaged",
+      "confidence": 0.88,
+      "probabilities": {
+        "Damaged": 0.8013,
+        "Degraded": 0.0011,
+        "Healthy": 0.1975
+      },
+      "label_distribution": {
+        "Healthy": 24,
+        "Damaged": 176
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.9999,
+        "Healthy": 0.0001
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Healthy",
+      "confidence": 0.98,
+      "probabilities": {
+        "Damaged": 0.0174,
+        "Degraded": 0.0015,
+        "Healthy": 0.9811
+      },
+      "label_distribution": {
+        "Healthy": 196,
+        "Damaged": 4
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0002,
+        "Healthy": 0.9998
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 0.0001,
+        "Healthy": 0.9999
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    },
+    {
+      "true": "Healthy",
+      "pred": "Healthy",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0004,
+        "Degraded": 0.0002,
+        "Healthy": 0.9994
+      },
+      "label_distribution": {
+        "Healthy": 200
+      }
+    },
+    {
+      "true": "Damaged",
+      "pred": "Damaged",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 1.0,
+        "Degraded": 0.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Damaged": 200
+      }
+    },
+    {
+      "true": "Degraded",
+      "pred": "Degraded",
+      "confidence": 1.0,
+      "probabilities": {
+        "Damaged": 0.0,
+        "Degraded": 1.0,
+        "Healthy": 0.0
+      },
+      "label_distribution": {
+        "Degraded": 200
+      }
+    }
+  ]
+}

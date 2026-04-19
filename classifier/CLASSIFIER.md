@@ -156,6 +156,66 @@ Top features by GBM split-gain importance:
 
 ---
 
+---
+
+## Sensor Uncertainty
+
+Sensor specifications are stored in `sensor_config.json` — all values are read from that file; none are hardcoded in the logic. The sensor modelled is the **enDAQ S3-D40** digital capacitive accelerometer.
+
+| Parameter | Value |
+|---|---|
+| Model | enDAQ S3-D40 |
+| Range | ±40 G |
+| Noise floor | < 0.01 gRMS |
+| Resolution | 0.00008 g |
+| Bandwidth | 0–300 Hz |
+| Sampling rate | 4000 Hz |
+
+### Propagation Method
+
+Uncertainty is propagated analytically per feature using the **delta method**, then sampled with Monte Carlo at the feature level (not the signal level). Propagating noise at the signal level would incorrectly destroy the cross-channel correlation features (`cross_corr`, `rms_ratio`, `diff_rms`) since independent noise added to g4 and g5 decorrelates two channels that are physically coupled through the track structure.
+
+Key derivations for sensor noise `σ_n` over `N` CRUISE-phase samples:
+
+| Feature | Analytical σ |
+|---|---|
+| RMS, std | `σ_n / √(2N)` |
+| Mean | `σ_n / √N` |
+| Kurtosis | `√(24/N)` |
+| Skewness | `√(6/N)` |
+| p99_abs | `σ_n / (N · φ(Φ⁻¹(0.99)))` — order-statistic stderr |
+| exceedance_rate | `√(p·(1−p)/N)` — binomial SE |
+| cross_corr | `(1 − r²) / √N` — Fisher's z-transform |
+| max_win_kurtosis | `√(24/W)` where W = window size |
+
+### Uncertainty-Aware Results (200 MC trials, σ_n = 0.01 G)
+
+**KNN — 96.2% accuracy, mean confidence 0.870**
+
+| Confidence tier | Accuracy | Runs |
+|---|---|---|
+| High ≥ 0.85 | **100%** | 31 |
+| Medium 0.60–0.85 | 93.8% | 16 |
+| Low < 0.60 | 80.0% | 5 |
+
+KNN confidence is **well-calibrated** — both misclassifications occur at low confidence (0.52 and 0.77). Flagging predictions below 0.85 for human review yields perfect accuracy on 60% of the test set with only 2 uncertain cases remaining.
+
+**GBM — 90.4% accuracy, mean confidence 0.978**
+
+| Confidence tier | Accuracy | Runs |
+|---|---|---|
+| High ≥ 0.85 | 90.0% | 50 |
+| Medium 0.60–0.85 | 100% | 1 |
+| Low < 0.60 | 100% | 1 |
+
+GBM is **overconfident** — 4 of 5 misclassifications occur at high confidence (one at 1.000). This is a known property of gradient-boosted tree ensembles, which produce extreme probability estimates far from decision boundaries. Confidence scores are not a reliable uncertainty signal for GBM.
+
+### Recommendation
+
+For safety-critical track health monitoring, **KNN is the preferred model**. Its confidence score is meaningful — high-confidence predictions are always correct in this evaluation — making it suitable for human-in-the-loop workflows where uncertain predictions are escalated for manual review.
+
+---
+
 ## Outputs
 
 All outputs are written to `classifier/output/`:
@@ -168,6 +228,7 @@ All outputs are written to `classifier/output/`:
 | `confusion_gbm.png` | GBM confusion matrix on test set |
 | `feature_importance_gbm.png` | Top-20 GBM feature importances |
 | `results.json` | CV and test metrics, top-10 feature importances |
+| `uncertainty_eval.json` | Per-run uncertainty predictions on the test set |
 
 ---
 
@@ -176,21 +237,23 @@ All outputs are written to `classifier/output/`:
 ```python
 import classifier
 
-# Load a trained model
-model = classifier.load_model("knn")   # or "gbm"
+model      = classifier.load_model("knn")        # or "gbm"
+sensor_cfg = classifier.load_sensor_config()     # reads sensor_config.json
 
-# Predict on a new run
-result = classifier.predict(
-    model,
-    daq_path="path/to/daq_sensors_1000hz.csv",
-    motion_path="path/to/arduino_motion_raw.csv",
-)
+# Point estimate (no uncertainty)
+result = classifier.predict(model, daq_path, motion_path)
+print(result["label"])           # "Healthy" | "Degraded" | "Damaged"
+print(result["probabilities"])   # {"Damaged": 0.03, "Degraded": 0.06, "Healthy": 0.91}
 
-print(result["label"])          # "Healthy" | "Degraded" | "Damaged"
-print(result["probabilities"])  # {"Damaged": 0.03, "Degraded": 0.06, "Healthy": 0.91}
+# Uncertainty-aware prediction
+result = classifier.predict_with_uncertainty(model, daq_path, motion_path, sensor_cfg)
+print(result["label"])           # modal label across 200 MC trials
+print(result["confidence"])      # 0.845 — fraction of trials agreeing
+print(result["probabilities"])   # mean predicted P(class) across trials
+print(result["feature_uncertainty"][:3])  # top-3 noise-sensitive features
 ```
 
-Models must be trained first:
+Models must be trained before first use:
 
 ```bash
 python classifier/train_classifiers.py
