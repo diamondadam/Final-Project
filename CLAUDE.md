@@ -44,6 +44,11 @@ data/TrainRuns/
 
 ## Architecture
 
+> **Read [ARCHITECTURE.md](ARCHITECTURE.md) before making any structural changes.**
+> It is the canonical reference for module responsibilities, data flow, WebSocket
+> contract, and design decisions. CLAUDE.md contains run instructions and constants;
+> ARCHITECTURE.md contains system design.
+
 ### Data pipeline (`track_health_classifier.py`)
 
 1. **Phase filtering** — only `CRUISE` rows are used (constant-speed section). ACCEL/DECEL/REWIND are discarded because they introduce confounds unrelated to track structure.
