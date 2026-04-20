@@ -3,7 +3,7 @@ import { useTwinStore } from '../store/twinStore'
 
 export function NavBar() {
   const { connected, workOrders } = useTwinStore()
-  const openCount = workOrders.filter(w => w.status === 'OPEN').length
+  const openCount = workOrders.filter((w) => w.status === 'OPEN').length
 
   return (
     <nav className="flex items-center gap-1 px-4 h-12 border-b border-white/10 bg-[#0f1117] shrink-0">
@@ -22,14 +22,25 @@ export function NavBar() {
       </NavLink>
 
       <NavLink
-        to="/work-orders"
+        to="/analytics"
+        className={({ isActive }) =>
+          `px-3 py-1.5 rounded-md text-sm transition-colors ${
+            isActive ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`
+        }
+      >
+        Analytics
+      </NavLink>
+
+      <NavLink
+        to="/maintenance"
         className={({ isActive }) =>
           `relative px-3 py-1.5 rounded-md text-sm transition-colors ${
             isActive ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'
           }`
         }
       >
-        Work Orders
+        Maintenance
         {openCount > 0 && (
           <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
             {openCount > 9 ? '9+' : openCount}
