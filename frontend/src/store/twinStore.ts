@@ -60,7 +60,7 @@ export const useTwinStore = create<TwinStore>((set, get) => ({
         ...prev.segmentBeliefHistory.slice(-59),
         {
           tick: s.tick,
-          beliefs: s.segments.map((seg) => seg.belief as [number, number, number]),
+          beliefs: s.segments.map((seg) => seg.belief),
         },
       ],
     })),
@@ -90,11 +90,12 @@ export const useTwinStore = create<TwinStore>((set, get) => ({
   },
 
   applyCorrection: async (segment_id: number, state: number) => {
-    await fetch('/api/correction', {
+    const res = await fetch('/api/correction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ segment_id, state }),
     })
+    if (!res.ok) throw new Error(`Correction failed: ${res.status}`)
     get().addRepairLog({
       timestamp: new Date().toISOString(),
       type: 'OVERRIDE',
@@ -104,7 +105,8 @@ export const useTwinStore = create<TwinStore>((set, get) => ({
   },
 
   resetAll: async () => {
-    await fetch('/api/reset', { method: 'POST' })
+    const res = await fetch('/api/reset', { method: 'POST' })
+    if (!res.ok) throw new Error(`Reset failed: ${res.status}`)
     await get().refreshWorkOrders()
     set({ repairLog: [] })
   },
