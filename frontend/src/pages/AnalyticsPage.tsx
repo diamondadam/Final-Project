@@ -3,6 +3,7 @@ import { AlertBreakdown } from '../components/analytics/AlertBreakdown'
 import { PositionTimeline } from '../components/analytics/PositionTimeline'
 import { CommandedVsTargetChart } from '../components/analytics/CommandedVsTargetChart'
 import { HealthHeatmap } from '../components/analytics/HealthHeatmap'
+import { BeliefConvergence } from '../components/analytics/BeliefConvergence'
 
 export function AnalyticsPage() {
   return (
@@ -33,7 +34,7 @@ export function AnalyticsPage() {
           <CommandedVsTargetChart />
           <div className="flex flex-col gap-4">
             <HealthHeatmap />
-            <div className="text-zinc-600 text-sm p-4">belief panel coming…</div>
+            <BeliefConvergence />
           </div>
         </div>
       </section>
