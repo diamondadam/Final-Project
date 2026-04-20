@@ -54,7 +54,7 @@ export function WorkOrderList() {
     refreshWorkOrders()
     const id = setInterval(refreshWorkOrders, 5000)
     return () => clearInterval(id)
-  }, [])
+  }, [refreshWorkOrders])
 
   async function handleComplete(id: string, segmentId: number) {
     await completeWorkOrder(id)

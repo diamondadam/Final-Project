@@ -26,7 +26,7 @@ export function RepairHistoryLog() {
         <div className="flex flex-col gap-1.5">
           {repairLog.map((entry, i) => (
             <div
-              key={i}
+              key={`${entry.timestamp}-${entry.segment_id}-${i}`}
               className="flex items-center gap-3 px-3 py-2 bg-white/[0.03] border border-white/5 rounded-lg"
             >
               <span className="text-[10px] text-zinc-600 font-mono w-16 shrink-0">
