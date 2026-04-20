@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rail Track Digital Twin</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-short">RT</span>
+        <span class="logo-long">RAIL TWIN</span>
+      </div>
+      <a class="nav-item active" href="#"><span class="nav-icon">⬡</span><span class="nav-label">Live HUD</span></a>
+      <a class="nav-item" href="#"><span class="nav-icon">⟁</span><span class="nav-label">Analytics</span></a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙</span><span class="nav-label">Maintenance</span></a>
+      <div class="sidebar-footer">
+        <div class="ws-indicator" id="ws-indicator">
+          <span class="ws-dot" id="ws-dot"></span>
+          <span class="ws-label" id="ws-label">Connecting…</span>
+        </div>
+        <a class="nav-item nav-bottom" href="#" id="export-btn">
+          <span class="nav-icon">↗</span><span class="nav-label">Export Report</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="main">
+
+      <!-- Alert Banner -->
+      <div class="alert-banner" id="alert-banner">
+        <span class="alert-dot" id="alert-dot"></span>
+        <span class="alert-text" id="alert-text">Waiting for data…</span>
+        <span class="alert-tick" id="alert-tick"></span>
+      </div>
+
+      <!-- 4-Panel Grid -->
+      <div class="panels">
+
+        <!-- P1: Live Feed -->
+        <div class="panel" id="panel-feed">
+          <div class="panel-header">
+            <span class="panel-title">▶ LIVE FEED — UE5</span>
+            <span class="panel-badge badge-live">● LIVE</span>
+          </div>
+          <div class="feed-body">
+            <div class="live-placeholder">
+              <div class="play-icon">▶</div>
+              <span class="placeholder-label">UNREAL ENGINE FEED</span>
+              <span class="placeholder-sub">Connect UE5 stream URL here</span>
+            </div>
+            <div class="coord-row">
+              <div class="coord-cell">
+                <div class="coord-label">LAT</div>
+                <div class="coord-value" id="coord-lat">—</div>
+              </div>
+              <div class="coord-cell">
+                <div class="coord-label">LONG</div>
+                <div class="coord-value" id="coord-long">—</div>
+              </div>
+              <div class="coord-cell">
+                <div class="coord-label">ACTIVE SEGMENT</div>
+                <div class="coord-value" id="coord-seg">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- P2: Segment Classification -->
+        <div class="panel" id="panel-segments">
+          <div class="panel-header">
+            <span class="panel-title">TRACK SEGMENT CLASSIFICATION</span>
+            <span class="panel-badge badge-red" id="seg-badge">—</span>
+          </div>
+          <div class="seg-body">
+            <div class="seg-list" id="seg-list">
+              <!-- Populated by segments.js -->
+            </div>
+            <div class="seg-legend">
+              <div class="leg"><div class="leg-dot" style="background:var(--green);"></div><span style="color:var(--green);">Healthy</span></div>
+              <div class="leg"><div class="leg-dot" style="background:var(--amber);"></div><span style="color:var(--amber);">Degraded</span></div>
+              <div class="leg"><div class="leg-dot" style="background:var(--red);"></div><span style="color:var(--red);">Damaged</span></div>
+              <span class="train-pos-note">▶ = train position</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- P3: Telemetry -->
+        <div class="panel" id="panel-telemetry">
+          <div class="panel-header">
+            <span class="panel-title">REAL-TIME TELEMETRY</span>
+            <div class="chart-legend">
+              <div class="c-leg"><div class="c-line" style="background:var(--blue);"></div><span style="color:var(--blue);">Velocity</span></div>
+              <div class="c-leg"><div class="c-line c-dashed" style="border-color:var(--cream);"></div><span style="color:var(--cream);">Accel</span></div>
+              <div class="c-leg"><div class="c-line" style="background:var(--amber);"></div><span style="color:var(--amber);">MPC Speed</span></div>
+            </div>
+          </div>
+          <div class="telem-body">
+            <div class="chart-outer">
+              <canvas id="telem-chart"></canvas>
+            </div>
+            <div class="readouts">
+              <div class="readout">
+                <div><span class="readout-val" id="rv-velocity" style="color:#87CEEB;">—</span><span class="readout-unit"> fps</span></div>
+                <div class="readout-lbl">VELOCITY</div>
+              </div>
+              <div class="readout">
+                <div><span class="readout-val" id="rv-accel" style="color:#FDFBD4;">—</span><span class="readout-unit"> fps²</span></div>
+                <div class="readout-lbl">ACCELERATION</div>
+              </div>
+              <div class="readout">
+                <div><span class="readout-val" id="rv-mpc" style="color:#f59e0b;">—</span><span class="readout-unit"> fps</span></div>
+                <div class="readout-lbl">MPC SPEED</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- P4: Maintenance Orders -->
+        <div class="panel" id="panel-orders">
+          <div class="panel-header">
+            <span class="panel-title">MAINTENANCE ORDER LIST</span>
+            <span class="panel-badge badge-red" id="orders-badge">—</span>
+          </div>
+          <div class="orders-body">
+            <div class="orders-list" id="orders-list">
+              <!-- Populated by orders.js -->
+            </div>
+            <div class="orders-footer">
+              Auto-sorted by damage confidence · Marking complete repairs segment in simulation
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="state.js"></script>
+  <script type="module" src="ws.js"></script>
+  <script type="module" src="segments.js"></script>
+  <script type="module" src="charts.js"></script>
+  <script type="module" src="orders.js"></script>
+</body>
+</html>

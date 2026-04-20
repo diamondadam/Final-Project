@@ -1,0 +1,34 @@
+<h2>What should the Analytics page emphasize?</h2>
+<p class="subtitle">Both options include train telemetry and MPC data — the question is which story comes first.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Safety Operations First</h3>
+      <p>Lead with <strong>speed &amp; alert history</strong> — what happened, when, and why the controller throttled. MPC performance is framed as: "did the train respond correctly to track conditions?" Per-segment health heatmap as supporting context.</p>
+      <br>
+      <p style="font-size:12px;color:#888">Best for: operators, demo audiences, safety review</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Classifier &amp; Belief Intelligence First</h3>
+      <p>Lead with <strong>per-segment belief convergence</strong> — how quickly and confidently each segment was classified over time. MPC is secondary: the speed chart shows the downstream effect of belief. Entropy timeline shows uncertainty.</p>
+      <br>
+      <p style="font-size:12px;color:#888">Best for: ML/engineering review, academic presentation</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Split: Telemetry + Controller in Equal Sections</h3>
+      <p>Two clear sections on one page: <strong>Train Telemetry</strong> (speed, alerts, position timeline) and <strong>Controller Performance</strong> (MPC target vs. commanded speed, throttle ratio, segment health heatmap). Neither dominates.</p>
+      <br>
+      <p style="font-size:12px;color:#888">Best for: comprehensive view, milestone demos</p>
+    </div>
+  </div>
+</div>

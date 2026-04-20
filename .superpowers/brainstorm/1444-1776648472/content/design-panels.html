@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design — Section 2: Panel Layout</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e5e7eb; font-family: 'Segoe UI', system-ui, sans-serif; padding: 16px; font-size: 13px; }
+  h2 { color: #FDFBD4; font-size: 15px; letter-spacing: 1px; margin-bottom: 4px; }
+  .subtitle { color: #6b7280; font-size: 11px; margin-bottom: 14px; }
+
+  /* App shell */
+  .app { display: flex; height: calc(100vh - 80px); min-height: 500px; border: 1px solid #374151; border-radius: 8px; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 48px;
+    background: #1a2332;
+    border-right: 1px solid #374151;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 0; gap: 6px;
+    transition: width 0.22s ease;
+    overflow: hidden; white-space: nowrap;
+  }
+  .sidebar:hover { width: 160px; }
+  .sidebar-logo {
+    color: #FDFBD4; font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    padding: 0 12px; margin-bottom: 10px; width: 100%;
+    overflow: hidden;
+  }
+  .sidebar-logo .short { display: inline; }
+  .sidebar-logo .long { display: none; }
+  .sidebar:hover .sidebar-logo .short { display: none; }
+  .sidebar:hover .sidebar-logo .long { display: inline; }
+  .nav-item {
+    width: 100%; padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+    color: #6b7280; font-size: 11px; cursor: pointer; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .nav-item:hover { background: #2d3748; color: #FDFBD4; }
+  .nav-item.active { background: #2d3748; color: #FDFBD4; }
+  .nav-icon { font-size: 14px; min-width: 20px; text-align: center; }
+  .nav-label { opacity: 0; transition: opacity 0.15s; font-size: 11px; }
+  .sidebar:hover .nav-label { opacity: 1; }
+  .nav-item.active .nav-label { color: #FDFBD4; }
+  .nav-bottom { margin-top: auto; }
+
+  /* Main area */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Alert banner */
+  .alert-banner {
+    background: #1f1515; border-bottom: 1px solid #FF1A1A44;
+    padding: 7px 16px; display: flex; align-items: center; gap: 10px;
+    font-size: 10px; letter-spacing: 0.5px;
+  }
+  .alert-dot { width: 7px; height: 7px; border-radius: 50%; background: #FF1A1A; animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .alert-text { color: #FF1A1A; font-weight: 600; }
+  .alert-clear { background: #1a2a1a; border-bottom: 1px solid #ADEBB344; }
+  .alert-clear .alert-dot { background: #ADEBB3; animation: none; }
+  .alert-clear .alert-text { color: #ADEBB3; }
+  .alert-tick { margin-left: auto; color: #4b5563; font-size: 9px; font-family: monospace; }
+
+  /* 4-panel grid */
+  .panels {
+    flex: 1; display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px; padding: 10px; overflow: hidden;
+  }
+  .panel {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .panel-header {
+    padding: 8px 12px; border-bottom: 1px solid #374151;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .panel-title { color: #FDFBD4; font-size: 9px; letter-spacing: 2px; font-weight: 600; }
+  .panel-badge { font-size: 7px; padding: 2px 7px; border-radius: 10px; }
+  .badge-live { background: #87CEEB22; color: #87CEEB; border: 1px solid #87CEEB44; }
+  .badge-red { background: #FF1A1A22; color: #FF1A1A; border: 1px solid #FF1A1A44; }
+  .badge-green { background: #ADEBB322; color: #ADEBB3; border: 1px solid #ADEBB344; }
+  .panel-body { flex: 1; padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+
+  /* Panel 1 — Live Feed */
+  .live-feed-placeholder {
+    flex: 1; background: #0d1117; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;
+    border: 1px dashed #374151;
+  }
+  .live-feed-placeholder .play { font-size: 28px; color: #FDFBD4; opacity: 0.4; }
+  .live-coords { display: flex; gap: 12px; }
+  .coord { color: #6b7280; font-size: 8px; font-family: monospace; }
+  .coord span { color: #87CEEB; }
+
+  /* Panel 2 — Segment Classification */
+  .seg-row { display: flex; align-items: center; gap: 8px; }
+  .seg-id { color: #6b7280; font-size: 8px; font-family: monospace; width: 36px; }
+  .seg-bar-wrap { flex: 1; background: #111827; border-radius: 2px; height: 14px; overflow: hidden; }
+  .seg-bar { height: 100%; border-radius: 2px; display: flex; align-items: center; padding: 0 5px; }
+  .seg-label { font-size: 7px; color: #fff; }
+  .seg-pct { font-size: 8px; width: 30px; text-align: right; font-family: monospace; }
+  .seg-bar.healthy { background: #ADEBB3; }
+  .seg-bar.degraded { background: #f59e0b; }
+  .seg-bar.damaged { background: #FF1A1A; }
+  .seg-label.healthy { color: #0d1117; }
+  .seg-label.degraded { color: #0d1117; }
+  .seg-pct.healthy { color: #ADEBB3; }
+  .seg-pct.degraded { color: #f59e0b; }
+  .seg-pct.damaged { color: #FF1A1A; }
+  .belief-mini { display: flex; gap: 2px; margin-top: 2px; }
+  .belief-block { height: 3px; border-radius: 1px; }
+  .seg-legend { display: flex; gap: 12px; margin-top: 4px; padding-top: 6px; border-top: 1px solid #374151; }
+  .leg-item { font-size: 7px; display: flex; align-items: center; gap: 4px; }
+  .leg-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Panel 3 — Telemetry */
+  .chart-area { flex: 1; background: #111827; border-radius: 4px; padding: 6px; position: relative; }
+  .chart-labels { display: flex; gap: 12px; margin-bottom: 6px; }
+  .chart-label { font-size: 7px; display: flex; align-items: center; gap: 4px; }
+  .chart-dot { width: 8px; height: 2px; border-radius: 1px; }
+  .readouts { display: flex; gap: 16px; margin-top: 8px; }
+  .readout-val { font-size: 18px; font-weight: 700; font-family: monospace; line-height: 1; }
+  .readout-unit { font-size: 9px; color: #6b7280; margin-left: 2px; }
+  .readout-lbl { font-size: 7px; color: #6b7280; letter-spacing: 1px; margin-top: 2px; }
+
+  /* Panel 4 — Orders */
+  .order-item {
+    border-radius: 4px; padding: 8px 10px;
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid transparent;
+  }
+  .order-item.damaged { background: #1f1515; border-color: #FF1A1A44; }
+  .order-item.degraded { background: #1f1a0f; border-color: #f59e0b44; }
+  .order-item.healthy { background: #141f14; border-color: #ADEBB344; opacity: 0.6; }
+  .order-rank { font-size: 11px; font-weight: 700; width: 18px; }
+  .order-rank.damaged { color: #FF1A1A; }
+  .order-rank.degraded { color: #f59e0b; }
+  .order-info { flex: 1; }
+  .order-name { font-size: 9px; color: #e5e7eb; font-weight: 600; }
+  .order-sub { font-size: 7px; color: #6b7280; margin-top: 1px; }
+  .mat-select {
+    background: #2d3748; color: #FDFBD4; border: 1px solid #4b5563;
+    font-size: 7px; border-radius: 3px; padding: 3px 5px; cursor: pointer;
+  }
+  .complete-btn {
+    background: #ADEBB322; color: #ADEBB3; border: 1px solid #ADEBB344;
+    font-size: 7px; border-radius: 3px; padding: 3px 7px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .complete-btn:hover { background: #ADEBB344; }
+  .orders-footer { font-size: 7px; color: #4b5563; padding-top: 6px; border-top: 1px solid #2d3748; margin-top: 2px; }
+
+  /* Data source annotations */
+  .ann { font-size: 8px; color: #4b5563; font-style: italic; }
+  .ann span { color: #87CEEB; }
+</style>
+</head>
+<body>
+
+<h2>Design — Section 2: Panel Layout + Live Data Mappings</h2>
+<p class="subtitle">Full dashboard mockup with every data field annotated to its WebSocket source. Hover the sidebar to see it expand.</p>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span class="short">RT</span>
+      <span class="long">RAIL TWIN</span>
+    </div>
+    <div class="nav-item active">
+      <span class="nav-icon">⬡</span>
+      <span class="nav-label">Live HUD</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">⟁</span>
+      <span class="nav-label">Analytics</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">⚙</span>
+      <span class="nav-label">Maintenance</span>
+    </div>
+    <div class="nav-item nav-bottom">
+      <span class="nav-icon">↗</span>
+      <span class="nav-label">Export Report</span>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Alert Banner -->
+    <div class="alert-banner">
+      <div class="alert-dot"></div>
+      <span class="alert-text">DANGER — Damaged track detected on SEG 3. Speed reduced. Proceed with caution.</span>
+      <span class="alert-tick">TICK #42 · 14:23:01</span>
+    </div>
+    <div style="padding:2px 16px;background:#111827;border-bottom:1px solid #1f2937;">
+      <span class="ann">← <span>state.alert</span> + <span>state.tick</span> + <span>state.timestamp</span> from WebSocket</span>
+    </div>
+
+    <!-- 4 Panels -->
+    <div class="panels">
+
+      <!-- Panel 1: Live Feed -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">▶ LIVE FEED — UE5</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="color:#6b7280;font-size:8px;font-family:monospace;">SEG <span style="color:#87CEEB;">3</span></span>
+            <span class="panel-badge badge-live">● LIVE</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="live-feed-placeholder">
+            <div class="play">▶</div>
+            <span style="color:#6b7280;font-size:9px;letter-spacing:1px;">UNREAL ENGINE FEED</span>
+            <span style="color:#4b5563;font-size:8px;">Placeholder — connect UE stream here</span>
+          </div>
+          <div class="live-coords">
+            <div class="coord">LAT <span>40.4427° N</span></div>
+            <div class="coord">LONG <span>79.9432° W</span></div>
+            <div class="coord">TRAIN SEG <span style="color:#f59e0b;">3</span></div>
+          </div>
+          <div class="ann">← <span>state.train_segment</span> drives highlighted segment</div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Segment Classification -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">TRACK SEGMENT CLASSIFICATION</span>
+          <span class="panel-badge badge-red">1 DAMAGED</span>
+        </div>
+        <div class="panel-body">
+          <!-- SEG 0 -->
+          <div class="seg-row">
+            <span class="seg-id">SEG 0</span>
+            <div class="seg-bar-wrap">
+              <div class="seg-bar healthy" style="width:95%"><span class="seg-label healthy">Healthy</span></div>
+            </div>
+            <span class="seg-pct healthy">95%</span>
+          </div>
+          <!-- SEG 1 -->
+          <div class="seg-row">
+            <span class="seg-id">SEG 1</span>
+            <div class="seg-bar-wrap">
+              <div class="seg-bar healthy" style="width:88%"><span class="seg-label healthy">Healthy</span></div>
+            </div>
+            <span class="seg-pct healthy">88%</span>
+          </div>
+          <!-- SEG 2 -->
+          <div class="seg-row">
+            <span class="seg-id">SEG 2</span>
+            <div class="seg-bar-wrap">
+              <div class="seg-bar degraded" style="width:70%"><span class="seg-label degraded">Degraded</span></div>
+            </div>
+            <span class="seg-pct degraded">70%</span>
+          </div>
+          <!-- SEG 3 — active -->
+          <div class="seg-row" style="background:#1f1515;border-radius:3px;padding:2px;">
+            <span class="seg-id" style="color:#FF1A1A;">SEG 3 ▶</span>
+            <div class="seg-bar-wrap">
+              <div class="seg-bar damaged" style="width:90%"><span class="seg-label">Damaged</span></div>
+            </div>
+            <span class="seg-pct damaged">90%</span>
+          </div>
+          <!-- SEG 4 -->
+          <div class="seg-row">
+            <span class="seg-id">SEG 4</span>
+            <div class="seg-bar-wrap">
+              <div class="seg-bar healthy" style="width:80%"><span class="seg-label healthy">Healthy</span></div>
+            </div>
+            <span class="seg-pct healthy">80%</span>
+          </div>
+
+          <div class="seg-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:#ADEBB3"></div><span style="color:#ADEBB3;">Healthy</span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div><span style="color:#f59e0b;">Degraded</span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#FF1A1A"></div><span style="color:#FF1A1A;">Damaged</span></div>
+            <span style="margin-left:auto;color:#4b5563;font-size:7px;">▶ = train position</span>
+          </div>
+          <div class="ann">← <span>state.segments[i].map_state_name</span> + <span>max(belief)</span></div>
+        </div>
+      </div>
+
+      <!-- Panel 3: Telemetry -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">REAL-TIME TELEMETRY</span>
+          <div class="chart-labels">
+            <div class="chart-label"><div class="chart-dot" style="background:#87CEEB"></div><span style="color:#87CEEB;font-size:7px;">Velocity</span></div>
+            <div class="chart-label"><div class="chart-dot" style="background:#FDFBD4"></div><span style="color:#FDFBD4;font-size:7px;">Accel</span></div>
+            <div class="chart-label"><div class="chart-dot" style="background:#f59e0b"></div><span style="color:#f59e0b;font-size:7px;">MPC Speed</span></div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-area">
+            <svg viewBox="0 0 300 70" style="width:100%;display:block;">
+              <line x1="0" y1="60" x2="300" y2="60" stroke="#2d3748" stroke-width="0.5"/>
+              <line x1="0" y1="40" x2="300" y2="40" stroke="#2d3748" stroke-width="0.5"/>
+              <line x1="0" y1="20" x2="300" y2="20" stroke="#2d3748" stroke-width="0.5"/>
+              <text x="2" y="59" fill="#374151" font-size="6">0</text>
+              <text x="2" y="39" fill="#374151" font-size="6">1.5</text>
+              <text x="2" y="19" fill="#374151" font-size="6">3.0</text>
+              <polyline points="0,58 40,50 80,46 120,38 160,30 200,35 240,28 280,22 300,18" fill="none" stroke="#87CEEB" stroke-width="1.5"/>
+              <polyline points="0,60 40,56 80,48 120,52 160,44 200,38 240,42 280,34 300,30" fill="none" stroke="#FDFBD4" stroke-width="1.5" stroke-dasharray="4,2"/>
+              <polyline points="0,56 40,52 80,50 120,42 160,36 200,40 240,32 280,26 300,24" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="readouts">
+            <div>
+              <div><span class="readout-val" style="color:#87CEEB;">2.1</span><span class="readout-unit">fps</span></div>
+              <div class="readout-lbl">VELOCITY</div>
+            </div>
+            <div>
+              <div><span class="readout-val" style="color:#FDFBD4;">0.3</span><span class="readout-unit">fps²</span></div>
+              <div class="readout-lbl">ACCEL</div>
+            </div>
+            <div>
+              <div><span class="readout-val" style="color:#f59e0b;">0.6</span><span class="readout-unit">fps</span></div>
+              <div class="readout-lbl">MPC SPEED</div>
+            </div>
+          </div>
+          <div class="ann">← <span>commanded_speed_fps</span> per tick. Accel = Δspeed/Δtime. History: last 30 ticks.</div>
+        </div>
+      </div>
+
+      <!-- Panel 4: Orders -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">MAINTENANCE ORDER LIST</span>
+          <span class="panel-badge badge-red">2 OPEN</span>
+        </div>
+        <div class="panel-body">
+          <div class="order-item damaged">
+            <span class="order-rank damaged">#1</span>
+            <div class="order-info">
+              <div class="order-name">SEG 3 — Damaged</div>
+              <div class="order-sub">Confidence 90% · ID: wo-001</div>
+            </div>
+            <select class="mat-select">
+              <option>Steel 3/8"</option>
+              <option>Aluminum 1/2"</option>
+              <option>Aluminum 3/8"</option>
+            </select>
+            <button class="complete-btn">✓ Complete</button>
+          </div>
+          <div class="order-item degraded">
+            <span class="order-rank degraded">#2</span>
+            <div class="order-info">
+              <div class="order-name">SEG 2 — Degraded</div>
+              <div class="order-sub">Confidence 70% · ID: wo-002</div>
+            </div>
+            <select class="mat-select">
+              <option>Steel 3/8"</option>
+              <option>Aluminum 1/2"</option>
+              <option>Aluminum 3/8"</option>
+            </select>
+            <button class="complete-btn">✓ Complete</button>
+          </div>
+          <div class="order-item healthy">
+            <span class="order-rank" style="color:#ADEBB3;">#3</span>
+            <div class="order-info">
+              <div class="order-name" style="color:#6b7280;">SEG 0, 1, 4 — Healthy</div>
+              <div class="order-sub">No action required</div>
+            </div>
+          </div>
+          <div class="orders-footer">
+            Auto-sorted by confidence · "Complete" calls POST /work-orders/{id}/complete · Repairs segment in simulation
+          </div>
+          <div class="ann">← <span>GET /work-orders</span> polled every 5s + <span>WebSocket</span> for live belief updates</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p style="color:#6b7280;font-size:10px;margin-top:10px;">Hover the sidebar icon strip on the left to see it expand. Does this layout and all the data mappings look correct? Confirm to proceed to the design doc.</p>
+
+</body>
+</html>

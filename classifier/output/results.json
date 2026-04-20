@@ -1,0 +1,59 @@
+{
+  "n_train": 218,
+  "n_test": 52,
+  "knn": {
+    "k": 7,
+    "cv_balanced_accuracy_mean": 0.9427,
+    "cv_balanced_accuracy_std": 0.0354,
+    "test_balanced_accuracy": 0.9639
+  },
+  "gbm": {
+    "n_estimators": 300,
+    "learning_rate": 0.05,
+    "cv_balanced_accuracy_mean": 0.9319,
+    "cv_balanced_accuracy_std": 0.0385,
+    "test_balanced_accuracy": 0.9195,
+    "top_features": [
+      {
+        "feature": "g5_rms",
+        "importance": 0.3232
+      },
+      {
+        "feature": "g4_kurtosis",
+        "importance": 0.1881
+      },
+      {
+        "feature": "cross_corr",
+        "importance": 0.1669
+      },
+      {
+        "feature": "g5_impulse_factor",
+        "importance": 0.076
+      },
+      {
+        "feature": "g5_kurtosis",
+        "importance": 0.043
+      },
+      {
+        "feature": "g4_band_mid",
+        "importance": 0.0388
+      },
+      {
+        "feature": "g5_band_mid",
+        "importance": 0.0188
+      },
+      {
+        "feature": "g4_max_win_kurtosis",
+        "importance": 0.0176
+      },
+      {
+        "feature": "g5_p99_abs",
+        "importance": 0.0174
+      },
+      {
+        "feature": "g5_mean",
+        "importance": 0.0159
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+<h2>Analytics Page — Section Contents</h2>
+<p class="subtitle">Two equal sections. Select any panels you want to remove or swap out.</p>
+
+<div class="section">
+  <h3 style="color:#34d399;margin-bottom:12px">① Train Telemetry</h3>
+  <div class="options" data-multiselect>
+    <div class="option selected" data-choice="speed-alert" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Speed + Alert Band Chart</h3>
+        <p>Speed line over time with background colored by alert state (green=CLEAR, amber=WARNING, red=DANGER). Expanded version of the Dashboard chart.</p>
+      </div>
+    </div>
+    <div class="option selected" data-choice="alert-stats" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Alert State Breakdown</h3>
+        <p>Three stat tiles: ticks spent in CLEAR / WARNING / DANGER, plus % of time at full speed. Gives a quick session summary at a glance.</p>
+      </div>
+    </div>
+    <div class="option selected" data-choice="position" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Train Position Timeline</h3>
+        <p>Step chart showing which segment the train is on each tick — makes it easy to see which segments caused alerts.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3 style="color:#f59e0b;margin-bottom:12px">② MPC Controller Performance</h3>
+  <div class="options" data-multiselect>
+    <div class="option selected" data-choice="commanded-vs-target" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Commanded vs. Target Speed</h3>
+        <p>Two overlaid lines: v_safe target (what the MPC aimed for based on MAP state) and actual commanded speed (after rate-limiting). Shows the smoothing effect of the QP solver.</p>
+      </div>
+    </div>
+    <div class="option selected" data-choice="health-heatmap" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Segment Health Heatmap</h3>
+        <p>Grid of segments × ticks, cell colored by MAP state (green/amber/red). Shows which segments were flagged and for how long — the MPC's decision input.</p>
+      </div>
+    </div>
+    <div class="option selected" data-choice="belief-convergence" onclick="toggleSelect(this)">
+      <div class="letter">✓</div>
+      <div class="content">
+        <h3>Per-Segment Belief Convergence</h3>
+        <p>Small multiples: one mini chart per segment showing how P(Healthy), P(Degraded), P(Damaged) evolved tick-by-tick. Shows how quickly the Bayesian tracker converged.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:20px">All six panels are pre-selected. Deselect any you don't want. Let me know in the terminal when ready.</p>
