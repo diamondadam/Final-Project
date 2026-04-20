@@ -2,6 +2,7 @@ import { SpeedAlertChart } from '../components/analytics/SpeedAlertChart'
 import { AlertBreakdown } from '../components/analytics/AlertBreakdown'
 import { PositionTimeline } from '../components/analytics/PositionTimeline'
 import { CommandedVsTargetChart } from '../components/analytics/CommandedVsTargetChart'
+import { HealthHeatmap } from '../components/analytics/HealthHeatmap'
 
 export function AnalyticsPage() {
   return (
@@ -30,7 +31,10 @@ export function AnalyticsPage() {
         </h2>
         <div className="grid grid-cols-[1fr_280px] gap-4">
           <CommandedVsTargetChart />
-          <div className="text-zinc-600 text-sm p-4">companions coming…</div>
+          <div className="flex flex-col gap-4">
+            <HealthHeatmap />
+            <div className="text-zinc-600 text-sm p-4">belief panel coming…</div>
+          </div>
         </div>
       </section>
     </div>
