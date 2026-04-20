@@ -3,6 +3,8 @@ export type AlertLevel = 'CLEAR' | 'WARNING' | 'DANGER'
 export function alertLevel(alert: string): AlertLevel {
   if (alert === 'CLEAR') return 'CLEAR'
   if (alert.startsWith('WARNING')) return 'WARNING'
+  if (alert.startsWith('DANGER')) return 'DANGER'
+  // Unknown alert strings fail safe: treat as DANGER so the UI never under-reports severity
   return 'DANGER'
 }
 

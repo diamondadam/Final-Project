@@ -11,6 +11,10 @@ describe('alertLevel', () => {
   it('returns DANGER for danger strings', () => {
     expect(alertLevel('DANGER – Damaged track detected. Speed reduced. Whistle!')).toBe('DANGER')
   })
+  it('returns DANGER for unrecognised strings (safe-fail)', () => {
+    expect(alertLevel('')).toBe('DANGER')
+    expect(alertLevel('NOMINAL')).toBe('DANGER')
+  })
 })
 
 describe('getAlertRuns', () => {
@@ -29,6 +33,10 @@ describe('getAlertRuns', () => {
     expect(runs[0]).toEqual({ x1: 1, x2: 2, level: 'CLEAR' })
     expect(runs[1]).toEqual({ x1: 3, x2: 3, level: 'WARNING' })
     expect(runs[2]).toEqual({ x1: 4, x2: 4, level: 'CLEAR' })
+  })
+  it('handles a single-element history', () => {
+    expect(getAlertRuns([{ tick: 5, alert: 'CLEAR' }]))
+      .toEqual([{ x1: 5, x2: 5, level: 'CLEAR' }])
   })
 })
 
@@ -49,5 +57,11 @@ describe('getVSafeHistory', () => {
     const result = getVSafeHistory(tickHistory, positionHistory, segmentBeliefHistory)
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({ tick: 1, commanded: 2.5, vSafe: 1.8 })
+  })
+  it('skips ticks where segment index exceeds beliefs array length', () => {
+    const tickHistory = [{ tick: 1, speed: 2.5, timestamp: '' }]
+    const positionHistory = [{ tick: 1, segment: 5 }]
+    const segmentBeliefHistory = [{ tick: 1, beliefs: [[0.1, 0.8, 0.1] as [number, number, number]] }]
+    expect(getVSafeHistory(tickHistory, positionHistory, segmentBeliefHistory)).toEqual([])
   })
 })
