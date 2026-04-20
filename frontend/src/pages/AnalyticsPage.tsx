@@ -1,4 +1,6 @@
 import { SpeedAlertChart } from '../components/analytics/SpeedAlertChart'
+import { AlertBreakdown } from '../components/analytics/AlertBreakdown'
+import { PositionTimeline } from '../components/analytics/PositionTimeline'
 
 export function AnalyticsPage() {
   return (
@@ -14,8 +16,18 @@ export function AnalyticsPage() {
         </h2>
         <div className="grid grid-cols-[1fr_280px] gap-4">
           <SpeedAlertChart />
-          <div className="text-zinc-600 text-sm p-4">companions coming…</div>
+          <div className="flex flex-col gap-4">
+            <AlertBreakdown />
+            <PositionTimeline />
+          </div>
         </div>
+      </section>
+
+      <section>
+        <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">
+          ② MPC Controller Performance
+        </h2>
+        <div className="text-zinc-600 text-sm p-4">Section 2 coming…</div>
       </section>
     </div>
   )
