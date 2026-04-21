@@ -40,8 +40,8 @@ export function CommandedVsTargetChart() {
                 <YAxis domain={[0, 3.5]} tick={{ fontSize: 10, fill: '#6b7280' }} width={28} />
                 <Tooltip
                   {...TOOLTIP_STYLE}
-                  formatter={(val: number, name: string) => [
-                    `${val.toFixed(2)} fps`,
+                  formatter={(val, name) => [
+                    typeof val === 'number' ? `${val.toFixed(2)} fps` : String(val),
                     name === 'vSafe' ? 'v_safe target' : 'commanded',
                   ]}
                 />

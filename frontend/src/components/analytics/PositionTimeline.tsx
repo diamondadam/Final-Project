@@ -41,7 +41,7 @@ export function PositionTimeline() {
               />
               <Tooltip
                 {...TOOLTIP_STYLE}
-                formatter={(v: number) => [`seg${v}`, 'position']}
+                formatter={(v) => [`seg${v}`, 'position']}
               />
               <Line
                 type="stepAfter"
