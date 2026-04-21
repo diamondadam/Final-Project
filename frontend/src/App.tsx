@@ -10,7 +10,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[#0f1117] flex flex-col">
+      <div className="min-h-screen bg-[var(--rt-bg)] flex flex-col">
         <NavBar />
         <div className="flex-1 overflow-y-auto">
           <Routes>
