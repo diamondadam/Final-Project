@@ -11,47 +11,44 @@ const BAR_LABELS = ['H', 'D', 'X']
 export function BeliefConvergence() {
   const { state } = useTwinStore()
 
-  if (!state) {
-    return (
-      <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex-1">
-        <p className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">
-          Belief Convergence
-        </p>
-        <div className="flex items-center justify-center h-16 text-zinc-600 text-sm">
-          Waiting for data…
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex-1">
-      <p className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">
-        Belief Convergence
-      </p>
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${state.segments.length}, 1fr)` }}>
-        {state.segments.map((seg) => (
-          <div key={seg.id} className="flex flex-col gap-1">
-            <span className="text-[9px] text-zinc-500 font-mono text-center">
-              SEG {seg.id}
-            </span>
-            <div className="flex items-end justify-center gap-0.5 h-10">
-              {seg.belief.map((p, i) => (
-                <div key={i} className="flex flex-col items-center gap-px flex-1">
-                  <div
-                    className="w-full rounded-sm transition-all duration-500"
-                    style={{
-                      height: `${Math.max(p * 100, 4)}%`,
-                      backgroundColor: BAR_COLORS[i],
-                      opacity: 0.75,
-                    }}
-                  />
-                  <span className="text-[8px] text-zinc-600">{BAR_LABELS[i]}</span>
-                </div>
-              ))}
-            </div>
+    <div className="bg-[var(--rt-surface)] border border-[var(--rt-border)] rounded overflow-hidden flex-1">
+      <div className="border-b border-[var(--rt-border)] px-[11px] py-[7px]">
+        <span className="text-[clamp(7px,0.9vw,9px)] font-bold tracking-[2px] text-[var(--rt-cream)] uppercase">
+          Belief Convergence
+        </span>
+      </div>
+      <div className="px-[11px] py-[8px]">
+        {!state ? (
+          <div className="flex items-center justify-center h-16 text-[var(--rt-muted)] text-[clamp(9px,1vw,11px)]">
+            Waiting for data…
           </div>
-        ))}
+        ) : (
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${state.segments.length}, 1fr)` }}>
+            {state.segments.map((seg) => (
+              <div key={seg.id} className="flex flex-col gap-1">
+                <span className="text-[clamp(7px,0.8vw,9px)] text-[var(--rt-muted)] font-mono text-center">
+                  SEG {seg.id}
+                </span>
+                <div className="flex items-end justify-center gap-0.5 h-10">
+                  {seg.belief.map((p, i) => (
+                    <div key={i} className="flex flex-col items-center gap-px flex-1">
+                      <div
+                        className="w-full rounded-sm transition-all duration-500"
+                        style={{
+                          height: `${Math.max(p * 100, 4)}%`,
+                          backgroundColor: BAR_COLORS[i],
+                          opacity: 0.8,
+                        }}
+                      />
+                      <span className="text-[clamp(7px,0.8vw,8px)] text-[var(--rt-muted)]">{BAR_LABELS[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
