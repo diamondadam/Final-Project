@@ -1,0 +1,136 @@
+RailTwin — Server + UE5 Connection Setup Guide
+================================================
+Last verified: 2026-04-20
+
+OVERVIEW
+--------
+The RailTwin UE5 project connects to a Python FastAPI backend via WebSocket.
+UE5 connects to ws://localhost:8000/ws to receive real-time track health data
+from the ML digital twin pipeline.
+
+NOTE: On some machines "localhost" resolves to ::1 (IPv6) instead of 127.0.0.1
+(IPv4). This guide covers both cases — see the Troubleshooting section if the
+connection fails.
+
+
+PRE-REQUISITES
+--------------
+- Python 3.10+ installed
+- UE5.6 installed
+- Project unzipped (RailTwin.zip and Final-Project-main.zip)
+- Dependencies installed:
+    cd <path to Final-Project-main\Final-Project-main>
+    pip install -r requirements.txt
+
+- IDAES extensions (IPOPT solver) installed:
+    pip install idaes-pse
+    idaes get-extensions
+  (if "idaes" is not recognized, find it in your Python Scripts folder and run
+  it directly, e.g. %APPDATA%\..\Local\...\Scripts\idaes.exe get-extensions)
+
+
+STEP 1 — SET IPOPT PATH
+------------------------
+IPOPT is installed by IDAES but not added to PATH automatically.
+Find where it was installed by running:
+
+    python -c "import idaes; print(idaes.bin_directory)"
+
+Then add that folder to your PATH for this terminal session:
+
+    set PATH=%PATH%;<output from above>
+
+Example output might look like:
+    C:\Users\<you>\AppData\Local\...\idaes\bin
+
+
+STEP 2 — NAVIGATE TO PROJECT ROOT
+-----------------------------------
+    cd "<path to Final-Project-main\Final-Project-main>"
+
+Example:
+    cd "C:\Users\<you>\Documents\RailTwin\Final-Project-main\Final-Project-main"
+
+
+STEP 3 — START THE SERVER
+--------------------------
+First, check how localhost resolves on your machine:
+
+    ping -n 1 localhost
+
+If it replies from 127.0.0.1 (IPv4), run:
+    python -m uvicorn api.app:app --reload --host 127.0.0.1
+
+If it replies from ::1 (IPv6), run:
+    python -m uvicorn api.app:app --reload --host ::1
+
+You should see:
+    CSVSensorSimulator: loading dataset via classifier pipeline...
+      Class 0: 81 runs loaded
+      Class 1: 97 runs loaded
+      Class 2: 92 runs loaded
+    DigitalTwin: loading KNN model from ...model_knn.joblib
+    Starting OODA loop (tick interval: 1.0s, track: [0, 1, 2, 1, 0], ...)
+    INFO:     Application startup complete.
+
+Verify the server is reachable:
+    curl http://localhost:8000/health
+    → should return {"status":"ok"}
+
+
+STEP 4 — CONNECT FROM UE5
+--------------------------
+1. Open RailTwin.uproject in UE5
+2. Make sure the level is loaded
+3. Hit Play (Alt+P)
+4. In the Output Log (Window → Output Log) you should see:
+     LogTemp: [RailTwin] WebSocket connected.
+
+The train will then respond to real ML-driven track health states.
+
+
+MOCK SERVER (alternative — no ML required)
+-------------------------------------------
+If you want to test UE5 without the full ML pipeline:
+
+    cd "<path to RailTwin\mock_server>"
+    pip install websockets
+    python mock_ws_server.py
+
+The mock server runs on the same ws://localhost:8000/ws endpoint.
+No PATH setup needed. UE5 connects identically.
+
+Interactive console commands while mock server is running:
+    status              — show current health state of each segment
+    set <seg> <state>   — e.g. "set 2 damaged"
+    all <state>         — set every segment to same state
+    reset               — set all segments to Healthy
+    help                — full command list
+
+
+KEY FILE LOCATIONS (relative to project root)
+----------------------------------------------
+Real backend:     Final-Project-main\Final-Project-main\api\app.py
+Mock server:      RailTwin\mock_server\mock_ws_server.py
+UE5 WS client:    RailTwin\Source\RailTwin\WebSocketClient.cpp
+UE5 WS URL:       RailTwin\Source\RailTwin\DigitalTwinSubsystem.h (line 43)
+KNN model:        Final-Project-main\Final-Project-main\classifier\output\model_knn.joblib
+
+
+TROUBLESHOOTING
+---------------
+Problem: "IPOPT not found" error on startup
+Fix: Run the set PATH command in Step 1 before starting the server
+
+Problem: "No module named api" error
+Fix: Make sure you cd into Final-Project-main\Final-Project-main first (Step 2)
+
+Problem: UE5 says "Waiting for API" / WebSocket keeps failing and server is silent
+Fix: localhost may resolve to ::1 (IPv6) on your machine. Run "ping -n 1 localhost"
+     to check, then use the matching --host flag as described in Step 3.
+
+Problem: libblas.dll system error when IPOPT runs
+Fix: The IDAES bin folder is not on PATH. Run the set PATH command in Step 1.
+
+Problem: "uvicorn is not recognized"
+Fix: Run it as a module instead: python -m uvicorn api.app:app --reload --host <ip>
