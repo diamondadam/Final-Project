@@ -4,91 +4,155 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CMU final project: a **digital twin** for rail track health monitoring. The core question is whether structural conditions under the track (Healthy / Degraded / Damaged) can be detected solely from vibration signals captured by two accelerometers on a moving train.
+CMU final project: a **digital twin** for rail track health monitoring. Vibration signals from two accelerometers (g4, g5) on a moving train are classified into Healthy / Degraded / Damaged track states, then streamed in real time to an Unreal Engine visualization via WebSocket.
 
 ## Running the Code
 
-All scripts are run from the repo root. Each writes its outputs to `classifier/output/`.
+All commands are run from the repo root unless noted.
 
 ```bash
-# Full classification pipeline (loads data, Kalman filter, Random Forest CV, plots)
-python classifier/track_health_classifier.py
+# 1. Train classifiers (required before running the API — outputs model_knn.joblib)
+python classifier/train_classifiers.py
 
-# OODA-loop simulation with Bayesian belief tracking + MPC speed control
-python classifier/simulation.py
+# 2. Start the FastAPI server (primary entry point for the live digital twin)
+uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
 
-# 3D animated GIF of the simulation (slow — renders all frames)
-python classifier/visualization_3d.py
+# 3. Start the React dashboard (cd frontend first)
+cd frontend && npm install && npm run dev   # dev server at http://localhost:5173
+cd frontend && npm run build               # production build
+cd frontend && npm run lint                # ESLint
 
-# Frequency diagnostics: PSD plots and ANOVA discriminative-power analysis
-python classifier/diagnose_frequencies.py
+# Legacy dashboard (Express static server, no install needed)
+node dashboard/server.js                   # serves dashboard/public/ at http://localhost:3000
 
-# Week 10 standalone safety-stop decision function demo
-python week10example/train_stop_decision.py
+# Standalone batch scripts (legacy / demo only)
+python classifier/track_health_classifier.py   # old Random Forest pipeline
+python classifier/simulation.py                # OODA loop batch run
+python classifier/visualization_3d.py          # 3D animated GIF (slow)
+python classifier/diagnose_frequencies.py      # PSD + ANOVA frequency analysis
+python week10example/train_stop_decision.py    # safety-stop decision demo
 ```
 
-Dependencies: `numpy`, `scipy`, `scikit-learn`, `matplotlib` (Agg backend), `Pillow` (for GIF output).
+**Python dependencies:** `fastapi uvicorn[standard] websockets pydantic>=2.0 httpx numpy scipy scikit-learn matplotlib Pillow pyomo joblib`
 
-## Data Layout
+**API environment variables:**
 
-```
-data/TrainRuns/
-  Steel_3_8_in/        → label 0 "Healthy"   (steel, highest stiffness)
-  Aluminum_1_2_in/     → label 1 "Degraded"  (aluminum, 1/2-in thick)
-  Aluminum_3_8_in/     → label 2 "Damaged"   (aluminum, 3/8-in thin)
-    <condition_dir>/
-      <run_dir>/
-        arduino_motion_raw.csv    # ~10 Hz: time_ms, phase, pos_ft, vel_fps
-        daq_sensors_1000hz.csv    # 1000 Hz: time_ms, g4, g5
-```
+| Variable | Default | Purpose |
+|---|---|---|
+| `TRACK_CONFIG` | `"0,1,2,1,0"` | Comma-separated health states per segment |
+| `SIMULATOR_TYPE` | `"csv"` | `"csv"` (real runs) or `"synthetic"` (parametric Gaussian) |
+| `TICK_INTERVAL_S` | `"1.0"` | Seconds between OODA ticks |
+| `WORK_ORDER_API_URL` | unset | External maintenance API base URL (omit to disable) |
+| `WORK_ORDER_API_KEY` | unset | Bearer token for work order API |
 
 ## Architecture
 
-> **Read [ARCHITECTURE.md](ARCHITECTURE.md) before making any structural changes.**
-> It is the canonical reference for module responsibilities, data flow, WebSocket
-> contract, and design decisions. CLAUDE.md contains run instructions and constants;
-> ARCHITECTURE.md contains system design.
+> **Read [ARCHITECTURE.md](ARCHITECTURE.md) before making structural changes.** It is the canonical reference for module responsibilities, data flow, WebSocket contract, and design decisions.
 
-### Data pipeline (`track_health_classifier.py`)
+### Module Map
 
-1. **Phase filtering** — only `CRUISE` rows are used (constant-speed section). ACCEL/DECEL/REWIND are discarded because they introduce confounds unrelated to track structure.
-2. **Timestamp alignment** — DAQ (1000 Hz) is aligned to arduino (10 Hz) using `bisect_left` nearest-neighbor lookup on `time_ms`.
-3. **Kalman filter** (`KalmanFilter1D`) — applied independently to g4 and g5 to reduce sensor noise while preserving structural vibration.
-4. **Position-segment feature extraction** — the cruise section is divided into `N_SEGMENTS=5` spatial bins. Features are computed per bin (not per time window), making them speed-invariant by design.
-5. **Feature vector** — 5 segments × 20 features = **100 features per run**. Per segment: 8 stats for g4, 8 for g5 (rms, mean, std, peak, crest factor, kurtosis, skewness, speed-normalised rms), 3 cross-sensor (pearson_corr, rms_ratio, diff_rms), 1 kinematic (mean_vel).
-6. **One row per run** — avoids data leakage in cross-validation.
-7. **Classifier** — `RandomForestClassifier(n_estimators=300, class_weight="balanced")` with `StandardScaler`. Evaluated with `StratifiedGroupKFold(n_splits=5)`.
+```
+data/TrainRuns/          ← read-only raw CSV sensor runs
+classifier/
+  train_classifiers.py   ← trains KNN + GBM pipelines, writes classifier/output/
+  uncertainty.py         ← Monte Carlo uncertainty propagation via delta method
+  output/
+    model_knn.joblib     ← sklearn Pipeline (StandardScaler + KNN) — used by live twin
+    model_gbm.joblib     ← sklearn Pipeline (StandardScaler + GBM)
+sensors/
+  base.py                ← BaseSensorSimulator abstract interface
+  csv_simulator.py       ← replays real CSV runs via DataPool
+  synthetic_simulator.py ← parametric Gaussian readings (no data/ required)
+controller/
+  bayesian.py            ← BayesianSegmentTracker (one per segment)
+  mpc.py                 ← PyomoMPCController (receding-horizon QP via IPOPT)
+digital_twin_v2/
+  orchestrator.py        ← DigitalTwin — drives the OODA loop each tick
+  state.py               ← TwinState / SegmentState dataclasses
+  constants.py           ← CLASS_NAMES = ["Healthy", "Degraded", "Damaged"]
+api/
+  app.py                 ← FastAPI server, lifespan startup, REST + WS endpoints
+  websocket.py           ← WebSocketManager — fan-out to all Unreal clients
+  models.py              ← Pydantic request/response schemas
+integrations/
+  work_orders.py         ← WorkOrderClient + WorkOrderStore (in-memory)
+frontend/                ← React 19 + TypeScript + Vite + Tailwind v4 dashboard
+  src/
+    types.ts             ← shared TypeScript interfaces (TwinState, WorkOrder, CLASS_COLORS)
+    store/twinStore.ts   ← Zustand store; holds live state, tick history (last 60), work orders
+    hooks/useTwinWebSocket.ts ← connects ws://<host>/ws, auto-reconnects every 2 s
+    components/          ← TrackDashboard, SegmentCard, AlertBanner, TrackConfigurator, WorkOrderPanel
+    pages/WorkOrdersPage.tsx
+  vite.config.ts         ← proxies /api → http://localhost:8000, /ws → ws://localhost:8000
+dashboard/               ← legacy Express static server (dashboard/public/); superseded by frontend/
+```
 
-### Simulation (`simulation.py`)
+### OODA Loop (one tick = one segment observation)
 
-Implements a full **OODA loop** per segment per pass over a configurable multi-segment track:
+1. **Observe** — `simulator.get_reading(seg, true_state)` → 33-feature vector
+2. **Orient** — `model_knn.predict_proba()` → class probabilities (reordered to `[Healthy, Degraded, Damaged]` since sklearn returns alphabetical order `[Damaged, Degraded, Healthy]`)
+3. **Decide** — `BayesianSegmentTracker.update(proba)` → `PyomoMPCController.compute_speed()`
+4. **Act** — emit `TwinState`, broadcast JSON to all WebSocket clients, fire work order on MAP state transition to Degraded/Damaged
 
-- **Observe** — sample a real feature vector from `DataPool` matching the segment's true health state.
-- **Orient** — run the trained Random Forest to get soft class probabilities.
-- **Decide** — `BayesianSegmentTracker` multiplies the new likelihood into the running belief (`posterior ∝ likelihood × prior`, with a `MIN_BELIEF=0.02` floor). `MPCSpeedController` uses a receding-horizon look-ahead (`MPC_HORIZON=3` segments) to compute commanded speed, penalising segments by their degradation risk.
-- **Act** — speed command is recorded; in a physical system the train actuator would respond.
+### API Endpoints
 
-`human_correction()` collapses a segment's belief to near-certain around the operator-confirmed state, simulating the human-in-the-loop (HITL) override.
+```
+GET  /health                          Liveness check
+GET  /state                           Latest TwinState snapshot
+GET  /config                          Current track config
+POST /config                          Hot-swap track configuration
+POST /correction  {segment_id, state} HITL override (collapses belief)
+POST /reset                           Reset all Bayesian trackers
+GET  /work-orders                     List all work orders (in-memory)
+POST /work-orders/{id}/complete       Complete a work order + repair segment
+WS   /ws                              Push TwinStateResponse JSON each tick
+```
 
-### Visualization (`visualization_3d.py`)
+Unreal Engine connects to `ws://localhost:8000/ws`.
 
-Renders a 3D animated GIF (`classifier/output/track_simulation_3d.gif`). Imports `DataPool`, `BayesianSegmentTracker`, and `MPCSpeedController` from `simulation.py` and re-runs the simulation to collect frame-level belief/speed data. Track segment colours are RGB-blended from the current belief vector (green=Healthy, orange=Degraded, red=Damaged).
+### Classifier Details
 
-### Safety stop (`week10example/train_stop_decision.py`)
+- **Active model:** KNN (`k=7, metric=euclidean, weights=distance`) — preferred for safety because confidence is well-calibrated (high-confidence predictions are always correct in evaluation). Test balanced accuracy: **0.964**.
+- **Features:** 33 per run — 15 per channel (g4, g5) + 3 cross-sensor (`cross_corr`, `rms_ratio`, `diff_rms`). All computed from the CRUISE phase only.
+- **Data:** 270 labeled runs (81 Healthy natural + 81 Degraded augmented + 81 Damaged augmented + 27 natural Degraded/Damaged). Train/test split uses `GroupShuffleSplit` by `source_run_id` to prevent augmented-copy leakage.
+- **GBM** is also trained and saved but is overconfident — do not use its confidence scores for safety decisions.
 
-Standalone module; not imported by the classifier or simulation. Contains `should_stop_train()` (batch) and `RealTimeStopMonitor` (streaming, O(1) memory via Welford's online algorithm). Thresholds derived empirically from the dataset: `PEAK_THRESHOLD_G=0.30`, `RMS_THRESHOLD_G=0.15`, `ZSCORE_THRESHOLD=6.0`.
+### Data Layout
 
-## Key Constants (edit to change behaviour)
+```
+data/TrainRuns/
+  Steel_3_8_in/          label "Healthy"
+  Aluminum_1_2_in/       label "Degraded"
+  Aluminum_3_8_in/       label "Damaged"
+    <condition_dir>/<run_dir>/
+      arduino_motion_raw.csv   ~10 Hz: time_ms, phase, pos_ft, vel_fps
+      daq_sensors_1000hz.csv   1000 Hz: time_ms, g4, g5
 
-| Location | Constant | Default | Effect |
+classifier/processed/    ETL output (labeled, grouped by source_run_id)
+```
+
+Do not write to `data/`.
+
+### Key Constants
+
+| File | Constant | Default | Effect |
 |---|---|---|---|
-| `track_health_classifier.py` | `N_SEGMENTS` | 5 | Spatial bins per run |
-| `simulation.py` | `TRACK_CONFIG` | `[0,0,1,2,1,0]` | True health state per segment |
-| `simulation.py` | `N_PASSES` | 15 | Train passes to simulate |
-| `simulation.py` | `MPC_HORIZON` | 3 | Look-ahead segments |
-| `simulation.py` | `SPEED_PENALTY` | `{0:0.0, 1:0.45, 2:0.80}` | Speed reduction per state |
-| `visualization_3d.py` | `N_VIS_PASSES` | 5 | Passes to animate |
+| `digital_twin_v2/orchestrator.py` | `V_MAX_FPS` | `3.0` | Max commanded speed |
+| `digital_twin_v2/orchestrator.py` | `V_MIN_FPS` | `0.5` | Min commanded speed |
+| `digital_twin_v2/orchestrator.py` | `MPC_HORIZON` | `3` | Look-ahead segments |
+| `api/app.py` env | `TICK_INTERVAL_S` | `1.0` | Seconds per OODA tick |
 
-## Known Issues
+### Work Order Logic
 
-- `simulation.py` lines 26–29 contain a syntax error in the `labeled_data_example` dict literal (used only as a comment/illustration). The file still runs because the broken dict is defined at module level before any imports, but Python will raise a `SyntaxError` if the indentation is wrong. Verify this before running.
+Work orders are created only on MAP state *transitions* to Degraded or Damaged (not every tick). Transitions back to Healthy do not auto-close. `POST /work-orders/{id}/complete` closes the order and calls `repair_segment()` — which sets `track_config[seg] = 0` and resets the tracker so the simulator stops returning degraded readings.
+
+`WorkOrderStore` is in-memory; orders are lost on server restart. `WorkOrderClient` (external HTTP POST) is only instantiated when `WORK_ORDER_API_URL` is set.
+
+### Frontend Architecture
+
+The React dashboard (`frontend/`) connects to the FastAPI backend via Vite's dev proxy. In production, serve the Vite build behind the same origin as the API.
+
+- **State management:** Zustand (`twinStore.ts`). All components read from the store — do not maintain local copies of `TwinState`.
+- **WebSocket:** `useTwinWebSocket` is mounted once at `App` level; it writes to the store on every tick. The `ws://` URL is derived from `window.location.host` so it works through the Vite proxy automatically.
+- **REST calls** (`/api/work-orders`, `/api/work-orders/{id}/complete`) go through the `/api` proxy rewrite — call `/api/...` in the frontend, never `http://localhost:8000` directly.
+- **Types:** `frontend/src/types.ts` mirrors `api/models.py` exactly. Keep them in sync when changing the API schema.

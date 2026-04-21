@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Page Mockups</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #09090b; color: #e4e4e7; font-family: system-ui, sans-serif; padding: 24px; }
+
+h1 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.subtitle { font-size: 12px; color: #52525b; margin-bottom: 20px; }
+
+.page-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab {
+  padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid #27272a; color: #71717a; background: #18181b;
+  transition: all 0.15s;
+}
+.tab.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* Shared panel styles */
+.phone {
+  background: #0f1117; border-radius: 12px; border: 1px solid #27272a;
+  overflow: hidden; max-width: 900px;
+}
+.nav {
+  background: #0f1117; border-bottom: 1px solid #1f1f23;
+  display: flex; align-items: center; gap: 4px; padding: 0 12px; height: 40px;
+}
+.nav-brand { font-size: 12px; font-weight: 700; color: #fff; margin-right: 8px; }
+.nav-link {
+  padding: 4px 10px; border-radius: 5px; font-size: 11px; color: #71717a;
+}
+.nav-link.active { background: #27272a; color: #fff; }
+.nav-dot { margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: #34d399; }
+.nav-live { font-size: 10px; color: #71717a; margin-left: 4px; }
+
+.page-body { padding: 16px; }
+.section-head {
+  font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #1f1f23;
+}
+.green { color: #34d399; }
+.amber { color: #f59e0b; }
+.purple { color: #a78bfa; }
+
+/* Panel */
+.panel {
+  background: #18181b; border: 1px solid #27272a; border-radius: 8px;
+  padding: 10px;
+}
+.panel-title { font-size: 9px; color: #52525b; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px; }
+
+/* Featured + Companion layout */
+.feat-row { display: grid; grid-template-columns: 1fr 200px; gap: 8px; margin-bottom: 16px; }
+.companion-col { display: flex; flex-direction: column; gap: 8px; }
+
+/* Chart placeholders */
+svg { display: block; }
+
+.stat-row { display: flex; gap: 6px; }
+.stat-box {
+  flex: 1; padding: 6px; border-radius: 6px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+}
+.stat-num { font-size: 15px; font-weight: 700; }
+.stat-lbl { font-size: 8px; color: #71717a; }
+
+/* Heatmap */
+.heatmap { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; }
+.hm-col { display: flex; flex-direction: column; gap: 2px; }
+.hm-cell { height: 12px; border-radius: 2px; }
+
+/* Segment belief small multiples */
+.beliefs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.belief-mini { background: #0f1117; border-radius: 5px; padding: 5px; }
+.belief-id { font-size: 8px; color: #52525b; margin-bottom: 3px; }
+.belief-bars { display: flex; gap: 1px; align-items: flex-end; height: 24px; }
+.belief-bar { flex: 1; border-radius: 1px 1px 0 0; }
+
+/* Maintenance */
+.main-grid { display: grid; grid-template-columns: 1fr 220px; gap: 10px; margin-bottom: 12px; }
+.wo-list { display: flex; flex-direction: column; gap: 5px; }
+.wo-row {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  background: #0f1117; border-radius: 6px; border: 1px solid #27272a;
+}
+.wo-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.wo-info { flex: 1; min-width: 0; }
+.wo-top { display: flex; align-items: center; gap: 6px; }
+.badge {
+  font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 10px;
+}
+.badge-red { background: #dc262622; color: #f87171; border: 1px solid #dc262640; }
+.badge-amber { background: #d9770622; color: #f59e0b; border: 1px solid #d9770640; }
+.badge-green { background: #16a34a22; color: #34d399; border: 1px solid #16a34a40; }
+.wo-seg { font-size: 10px; color: #d4d4d8; font-weight: 500; }
+.wo-time { font-size: 8px; color: #52525b; font-family: monospace; }
+.wo-msg { font-size: 9px; color: #71717a; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-complete {
+  font-size: 9px; padding: 3px 8px; border-radius: 4px;
+  background: #16a34a; color: #fff; font-weight: 600; flex-shrink: 0;
+}
+.btn-ghost {
+  font-size: 9px; padding: 3px 8px; border-radius: 4px;
+  background: #27272a; color: #71717a; font-weight: 600; flex-shrink: 0;
+}
+
+/* Segment override panel */
+.seg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.seg-ctrl {
+  background: #0f1117; border: 1px solid #27272a; border-radius: 6px;
+  padding: 6px; display: flex; flex-direction: column; gap: 4px;
+}
+.seg-ctrl-id { font-size: 8px; color: #52525b; font-weight: 700; }
+.seg-ctrl-state { font-size: 10px; font-weight: 600; }
+.seg-btn-row { display: flex; gap: 3px; }
+.seg-btn {
+  flex: 1; font-size: 7px; padding: 2px 3px; border-radius: 3px;
+  text-align: center; font-weight: 600; cursor: pointer;
+}
+.seg-btn-h { background: #16a34a33; color: #34d399; }
+.seg-btn-d { background: #d9770633; color: #f59e0b; }
+.seg-btn-x { background: #dc262633; color: #f87171; }
+
+/* History log */
+.log { display: flex; flex-direction: column; gap: 4px; }
+.log-row {
+  display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+  background: #18181b; border-radius: 5px; font-size: 9px;
+}
+.log-time { color: #52525b; font-family: monospace; width: 48px; flex-shrink: 0; }
+.log-type { width: 60px; flex-shrink: 0; }
+.log-msg { color: #71717a; }
+
+/* Action bar */
+.action-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.btn-danger {
+  font-size: 10px; padding: 5px 12px; border-radius: 6px;
+  background: #dc262622; color: #f87171; border: 1px solid #dc262640; font-weight: 600;
+}
+.stats-mini { display: flex; gap: 8px; }
+.sm { font-size: 10px; color: #71717a; }
+.sm span { font-weight: 700; color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>Rail Twin — New Pages Mockup</h1>
+<p class="subtitle">Click a tab to preview each page. These will sit alongside the existing Dashboard and Work Orders nav items.</p>
+
+<div class="page-tabs">
+  <div class="tab active" onclick="showPage('analytics')">📊 Analytics</div>
+  <div class="tab" onclick="showPage('maintenance')">🔧 Maintenance</div>
+</div>
+
+<!-- ===================== ANALYTICS PAGE ===================== -->
+<div class="page active" id="page-analytics">
+<div class="phone">
+  <div class="nav">
+    <span class="nav-brand">Rail Twin</span>
+    <span class="nav-link">Dashboard</span>
+    <span class="nav-link active">Analytics</span>
+    <span class="nav-link">Maintenance</span>
+    <span class="nav-link">Work Orders</span>
+    <span class="nav-dot"></span>
+    <span class="nav-live">Live</span>
+  </div>
+  <div class="page-body">
+
+    <!-- Section 1: Telemetry -->
+    <div class="section-head green">① Train Telemetry</div>
+    <div class="feat-row">
+
+      <!-- Featured: Speed + Alert Band -->
+      <div class="panel">
+        <div class="panel-title">Speed + Alert Band</div>
+        <svg viewBox="0 0 380 80" width="100%" height="80">
+          <!-- alert bands -->
+          <rect x="0" y="0" width="140" height="80" fill="#16a34a14"/>
+          <rect x="140" y="0" width="80" height="80" fill="#d9770614"/>
+          <rect x="220" y="0" width="60" height="80" fill="#dc262614"/>
+          <rect x="280" y="0" width="100" height="80" fill="#16a34a14"/>
+          <!-- v_max ref line -->
+          <line x1="0" y1="12" x2="380" y2="12" stroke="#27272a" stroke-dasharray="4,3" stroke-width="1"/>
+          <text x="4" y="10" fill="#3f3f46" font-size="7">v_max 3.0</text>
+          <!-- speed line -->
+          <polyline points="0,18 40,18 80,20 120,20 160,40 200,44 230,58 260,56 290,24 330,22 380,20"
+            fill="none" stroke="#34d399" stroke-width="2"/>
+          <!-- alert label bands -->
+          <text x="4" y="76" fill="#34d39966" font-size="7">CLEAR</text>
+          <text x="144" y="76" fill="#f59e0b66" font-size="7">WARN</text>
+          <text x="224" y="76" fill="#f8717166" font-size="7">DANGER</text>
+          <text x="284" y="76" fill="#34d39966" font-size="7">CLEAR</text>
+        </svg>
+      </div>
+
+      <!-- Companions right -->
+      <div class="companion-col">
+        <div class="panel">
+          <div class="panel-title">Alert Breakdown</div>
+          <div class="stat-row">
+            <div class="stat-box" style="background:#16a34a18;border-radius:5px">
+              <div class="stat-num green">61%</div>
+              <div class="stat-lbl">CLEAR</div>
+            </div>
+            <div class="stat-box" style="background:#d9770618;border-radius:5px">
+              <div class="stat-num amber">26%</div>
+              <div class="stat-lbl">WARN</div>
+            </div>
+            <div class="stat-box" style="background:#dc262618;border-radius:5px">
+              <div class="stat-num" style="color:#f87171">13%</div>
+              <div class="stat-lbl">DANGER</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1">
+          <div class="panel-title">Train Position</div>
+          <svg viewBox="0 0 180 44" width="100%" height="44">
+            <line x1="0" y1="8" x2="180" y2="8" stroke="#27272a" stroke-width="0.5"/>
+            <line x1="0" y1="16" x2="180" y2="16" stroke="#27272a" stroke-width="0.5"/>
+            <line x1="0" y1="24" x2="180" y2="24" stroke="#27272a" stroke-width="0.5"/>
+            <line x1="0" y1="32" x2="180" y2="32" stroke="#27272a" stroke-width="0.5"/>
+            <text x="0" y="7" fill="#3f3f46" font-size="6">seg4</text>
+            <text x="0" y="15" fill="#3f3f46" font-size="6">seg3</text>
+            <text x="0" y="23" fill="#3f3f46" font-size="6">seg2</text>
+            <text x="0" y="31" fill="#3f3f46" font-size="6">seg1</text>
+            <text x="0" y="39" fill="#3f3f46" font-size="6">seg0</text>
+            <polyline points="12,40 30,32 48,24 66,16 84,8 102,40 120,32 138,24 156,16 174,8"
+              fill="none" stroke="#818cf8" stroke-width="1.5"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: MPC -->
+    <div class="section-head amber">② MPC Controller Performance</div>
+    <div class="feat-row">
+
+      <!-- Featured: Commanded vs Target -->
+      <div class="panel">
+        <div class="panel-title">Commanded Speed vs. v_safe Target</div>
+        <svg viewBox="0 0 380 80" width="100%" height="80">
+          <line x1="0" y1="12" x2="380" y2="12" stroke="#27272a" stroke-dasharray="4,3" stroke-width="1"/>
+          <text x="4" y="10" fill="#3f3f46" font-size="7">3.0 fps</text>
+          <!-- v_safe target (dashed amber) -->
+          <polyline points="0,12 80,12 120,40 180,40 220,60 260,60 300,20 380,12"
+            fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.8"/>
+          <!-- commanded (solid green) -->
+          <polyline points="0,14 80,14 120,43 180,42 220,58 260,57 300,22 380,14"
+            fill="none" stroke="#34d399" stroke-width="2"/>
+          <!-- legend -->
+          <line x1="250" y1="72" x2="268" y2="72" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <text x="271" y="75" fill="#f59e0b" font-size="7">v_safe target</text>
+          <line x1="310" y1="72" x2="328" y2="72" stroke="#34d399" stroke-width="2"/>
+          <text x="331" y="75" fill="#34d399" font-size="7">commanded</text>
+        </svg>
+      </div>
+
+      <!-- Companions right -->
+      <div class="companion-col">
+        <div class="panel">
+          <div class="panel-title">Segment Health Heatmap</div>
+          <div style="display:grid;grid-template-rows:repeat(5,1fr);gap:2px;height:44px">
+            <div style="display:flex;gap:2px;align-items:center">
+              <span style="font-size:7px;color:#52525b;width:24px">seg0</span>
+              <div style="flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:1px">
+                <div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;align-items:center">
+              <span style="font-size:7px;color:#52525b;width:24px">seg1</span>
+              <div style="flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:1px">
+                <div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;align-items:center">
+              <span style="font-size:7px;color:#52525b;width:24px">seg2</span>
+              <div style="flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:1px">
+                <div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#dc262666"></div><div style="border-radius:1px;background:#dc262666"></div><div style="border-radius:1px;background:#dc262666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;align-items:center">
+              <span style="font-size:7px;color:#52525b;width:24px">seg3</span>
+              <div style="flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:1px">
+                <div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;align-items:center">
+              <span style="font-size:7px;color:#52525b;width:24px">seg4</span>
+              <div style="flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:1px">
+                <div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#d9770666"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div><div style="border-radius:1px;background:#16a34a66"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1">
+          <div class="panel-title">Belief Convergence (per segment)</div>
+          <div class="beliefs">
+            <div class="belief-mini">
+              <div class="belief-id">SEG 0</div>
+              <div class="belief-bars">
+                <div class="belief-bar" style="height:90%;background:#34d39988"></div>
+                <div class="belief-bar" style="height:6%;background:#f59e0b88"></div>
+                <div class="belief-bar" style="height:4%;background:#f8717188"></div>
+              </div>
+            </div>
+            <div class="belief-mini">
+              <div class="belief-id">SEG 1</div>
+              <div class="belief-bars">
+                <div class="belief-bar" style="height:10%;background:#34d39988"></div>
+                <div class="belief-bar" style="height:80%;background:#f59e0b88"></div>
+                <div class="belief-bar" style="height:10%;background:#f8717188"></div>
+              </div>
+            </div>
+            <div class="belief-mini">
+              <div class="belief-id">SEG 2</div>
+              <div class="belief-bars">
+                <div class="belief-bar" style="height:4%;background:#34d39988"></div>
+                <div class="belief-bar" style="height:8%;background:#f59e0b88"></div>
+                <div class="belief-bar" style="height:88%;background:#f8717188"></div>
+              </div>
+            </div>
+            <div class="belief-mini">
+              <div class="belief-id">SEG 3</div>
+              <div class="belief-bars">
+                <div class="belief-bar" style="height:15%;background:#34d39988"></div>
+                <div class="belief-bar" style="height:75%;background:#f59e0b88"></div>
+                <div class="belief-bar" style="height:10%;background:#f8717188"></div>
+              </div>
+            </div>
+            <div class="belief-mini">
+              <div class="belief-id">SEG 4</div>
+              <div class="belief-bars">
+                <div class="belief-bar" style="height:85%;background:#34d39988"></div>
+                <div class="belief-bar" style="height:10%;background:#f59e0b88"></div>
+                <div class="belief-bar" style="height:5%;background:#f8717188"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ===================== MAINTENANCE PAGE ===================== -->
+<div class="page" id="page-maintenance">
+<div class="phone">
+  <div class="nav">
+    <span class="nav-brand">Rail Twin</span>
+    <span class="nav-link">Dashboard</span>
+    <span class="nav-link">Analytics</span>
+    <span class="nav-link active">Maintenance</span>
+    <span class="nav-link">Work Orders</span>
+    <span class="nav-dot"></span>
+    <span class="nav-live">Live</span>
+  </div>
+  <div class="page-body">
+
+    <!-- Action bar -->
+    <div class="action-bar">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:#fff">Maintenance</div>
+        <div style="font-size:11px;color:#52525b">Work orders · segment overrides · repair log</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="stats-mini">
+          <span class="sm"><span>2</span> open WOs</span>
+          <span class="sm"><span>3</span> repairs</span>
+        </div>
+        <div class="btn-danger">Reset All Beliefs</div>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="main-grid">
+
+      <!-- Left: work orders -->
+      <div>
+        <div class="section-head amber">Work Orders</div>
+        <div class="wo-list">
+          <div class="wo-row">
+            <div class="wo-dot" style="background:#f87171"></div>
+            <div class="wo-info">
+              <div class="wo-top">
+                <span class="badge badge-red">DAMAGED</span>
+                <span class="wo-seg">Segment 2</span>
+                <span class="wo-time">14:23:01</span>
+              </div>
+              <div class="wo-msg">DANGER – Damaged track detected. Speed reduced. Whistle!</div>
+            </div>
+            <div class="btn-complete">Complete</div>
+          </div>
+          <div class="wo-row">
+            <div class="wo-dot" style="background:#f59e0b"></div>
+            <div class="wo-info">
+              <div class="wo-top">
+                <span class="badge badge-amber">DEGRADED</span>
+                <span class="wo-seg">Segment 3</span>
+                <span class="wo-time">14:19:44</span>
+              </div>
+              <div class="wo-msg">WARNING – Degraded track. Proceed with caution.</div>
+            </div>
+            <div class="btn-complete">Complete</div>
+          </div>
+          <div style="border-top:1px solid #1f1f23;margin:4px 0"></div>
+          <div class="wo-row" style="opacity:0.45">
+            <div class="wo-dot" style="background:#52525b"></div>
+            <div class="wo-info">
+              <div class="wo-top">
+                <span class="badge" style="background:#27272a;color:#71717a">DEGRADED</span>
+                <span class="wo-seg">Segment 1</span>
+                <span class="wo-time">14:11:12</span>
+              </div>
+              <div class="wo-msg">Completed at 14:15:30</div>
+            </div>
+            <div class="btn-ghost">Done</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: segment overrides -->
+      <div>
+        <div class="section-head purple">Segment Override (HITL)</div>
+        <div style="font-size:9px;color:#52525b;margin-bottom:6px">Force-set any segment's belief state</div>
+        <div class="seg-grid">
+          <div class="seg-ctrl">
+            <div class="seg-ctrl-id">SEG 0</div>
+            <div class="seg-ctrl-state green">Healthy</div>
+            <div class="seg-btn-row">
+              <div class="seg-btn seg-btn-h">H</div>
+              <div class="seg-btn seg-btn-d">D</div>
+              <div class="seg-btn seg-btn-x">X</div>
+            </div>
+          </div>
+          <div class="seg-ctrl">
+            <div class="seg-ctrl-id">SEG 1</div>
+            <div class="seg-ctrl-state amber">Degraded</div>
+            <div class="seg-btn-row">
+              <div class="seg-btn seg-btn-h">H</div>
+              <div class="seg-btn seg-btn-d" style="outline:1px solid #f59e0b">D</div>
+              <div class="seg-btn seg-btn-x">X</div>
+            </div>
+          </div>
+          <div class="seg-ctrl">
+            <div class="seg-ctrl-id">SEG 2</div>
+            <div class="seg-ctrl-state" style="color:#f87171">Damaged</div>
+            <div class="seg-btn-row">
+              <div class="seg-btn seg-btn-h">H</div>
+              <div class="seg-btn seg-btn-d">D</div>
+              <div class="seg-btn seg-btn-x" style="outline:1px solid #f87171">X</div>
+            </div>
+          </div>
+          <div class="seg-ctrl">
+            <div class="seg-ctrl-id">SEG 3</div>
+            <div class="seg-ctrl-state amber">Degraded</div>
+            <div class="seg-btn-row">
+              <div class="seg-btn seg-btn-h">H</div>
+              <div class="seg-btn seg-btn-d" style="outline:1px solid #f59e0b">D</div>
+              <div class="seg-btn seg-btn-x">X</div>
+            </div>
+          </div>
+          <div class="seg-ctrl">
+            <div class="seg-ctrl-id">SEG 4</div>
+            <div class="seg-ctrl-state green">Healthy</div>
+            <div class="seg-btn-row">
+              <div class="seg-btn seg-btn-h">H</div>
+              <div class="seg-btn seg-btn-d">D</div>
+              <div class="seg-btn seg-btn-x">X</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Repair history log -->
+    <div class="section-head" style="color:#a78bfa">Repair History</div>
+    <div class="log">
+      <div class="log-row">
+        <div class="log-time">14:15:30</div>
+        <div class="log-type"><span class="badge badge-green">REPAIRED</span></div>
+        <div class="log-msg">Segment 1 — work order completed, belief reset to uniform prior</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">14:08:12</div>
+        <div class="log-type"><span class="badge" style="background:#6366f122;color:#818cf8;border:1px solid #6366f140">OVERRIDE</span></div>
+        <div class="log-msg">Segment 4 — operator forced → Healthy</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">13:55:44</div>
+        <div class="log-type"><span class="badge badge-green">REPAIRED</span></div>
+        <div class="log-msg">Segment 0 — work order completed, belief reset to uniform prior</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

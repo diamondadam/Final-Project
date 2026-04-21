@@ -1,0 +1,78 @@
+<h2>Design — Section 1: Architecture & File Structure</h2>
+<p class="subtitle">Modular vanilla JS. Express serves static files. Browser owns the WebSocket connection directly.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Data Flow</div>
+  <div class="mockup-body" style="background:#111827;padding:20px;font-family:monospace;font-size:12px;">
+
+    <div style="display:flex;align-items:center;gap:0;justify-content:center;flex-wrap:wrap;gap:8px;">
+
+      <div style="background:#1f2937;border:1px solid #374151;border-radius:6px;padding:12px 16px;text-align:center;">
+        <div style="color:#FDFBD4;font-size:11px;font-weight:700;">FastAPI Backend</div>
+        <div style="color:#6b7280;font-size:9px;margin-top:4px;">localhost:8000</div>
+        <div style="color:#87CEEB;font-size:8px;margin-top:6px;">WS /ws → TwinState JSON</div>
+        <div style="color:#ADEBB3;font-size:8px;">GET /work-orders</div>
+        <div style="color:#ADEBB3;font-size:8px;">POST /work-orders/{id}/complete</div>
+        <div style="color:#ADEBB3;font-size:8px;">POST /correction</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="color:#87CEEB;font-size:10px;">WS stream</div>
+        <div style="color:#FDFBD4;font-size:18px;">⟶</div>
+        <div style="color:#ADEBB3;font-size:10px;">REST fetch</div>
+      </div>
+
+      <div style="background:#1f2937;border:1px solid #374151;border-radius:6px;padding:12px 16px;text-align:center;">
+        <div style="color:#FDFBD4;font-size:11px;font-weight:700;">Browser</div>
+        <div style="color:#6b7280;font-size:9px;margin-top:4px;">localhost:3000</div>
+        <div style="color:#87CEEB;font-size:8px;margin-top:6px;">ws.js — owns WS connection</div>
+        <div style="color:#f59e0b;font-size:8px;">state.js — shared TwinState</div>
+        <div style="color:#ADEBB3;font-size:8px;">charts.js — Chart.js telemetry</div>
+        <div style="color:#ADEBB3;font-size:8px;">orders.js — work order panel</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="color:#6b7280;font-size:10px;">static files</div>
+        <div style="color:#FDFBD4;font-size:18px;">⟵</div>
+        <div style="color:#6b7280;font-size:10px;">serves</div>
+      </div>
+
+      <div style="background:#1f2937;border:1px solid #374151;border-radius:6px;padding:12px 16px;text-align:center;">
+        <div style="color:#FDFBD4;font-size:11px;font-weight:700;">Express Server</div>
+        <div style="color:#6b7280;font-size:9px;margin-top:4px;">localhost:3000</div>
+        <div style="color:#6b7280;font-size:8px;margin-top:6px;">server.js</div>
+        <div style="color:#6b7280;font-size:8px;">serves /public/**</div>
+        <div style="color:#6b7280;font-size:8px;">no proxy, no WS logic</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">File Structure</div>
+  <div class="mockup-body" style="background:#111827;padding:16px;font-family:monospace;font-size:12px;line-height:2;">
+    <span style="color:#FDFBD4;">dashboard/</span><br>
+    <span style="color:#6b7280;">├── </span><span style="color:#87CEEB;">server.js</span><span style="color:#6b7280;font-size:10px;">          &nbsp;&nbsp;Express — serves public/, single entry point</span><br>
+    <span style="color:#6b7280;">├── </span><span style="color:#87CEEB;">package.json</span><span style="color:#6b7280;font-size:10px;">       &nbsp;&nbsp;only dependency: express</span><br>
+    <span style="color:#6b7280;">└── public/</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span style="color:#FDFBD4;">index.html</span><span style="color:#6b7280;font-size:10px;">     &nbsp;&nbsp;shell: sidebar, alert banner, 4-panel grid, loads scripts</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;├── style.css</span><span style="color:#6b7280;font-size:10px;">       &nbsp;&nbsp;charcoal theme, sidebar hover, panel layout</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span style="color:#87CEEB;">ws.js</span><span style="color:#6b7280;font-size:10px;">          &nbsp;&nbsp;WebSocket connection, reconnect logic, dispatches events</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span style="color:#f59e0b;">state.js</span><span style="color:#6b7280;font-size:10px;">       &nbsp;&nbsp;shared TwinState store, segment cache, tick history</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span style="color:#ADEBB3;">charts.js</span><span style="color:#6b7280;font-size:10px;">      &nbsp;&nbsp;Chart.js line graph (velocity, accel, speed over time)</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;├── </span><span style="color:#ADEBB3;">segments.js</span><span style="color:#6b7280;font-size:10px;">    &nbsp;&nbsp;Track segment classification panel renderer</span><br>
+    <span style="color:#6b7280;">&nbsp;&nbsp;&nbsp;&nbsp;└── </span><span style="color:#ADEBB3;">orders.js</span><span style="color:#6b7280;font-size:10px;">      &nbsp;&nbsp;Work order panel — fetch /work-orders, material select, complete</span><br>
+  </div>
+</div>
+
+<div style="margin-top:16px;">
+  <div style="background:#1f2937;border:1px solid #374151;border-radius:6px;padding:12px;">
+    <div style="color:#FDFBD4;font-size:10px;letter-spacing:1px;margin-bottom:8px;">TO RUN</div>
+    <div style="font-family:monospace;font-size:11px;color:#ADEBB3;">cd dashboard &nbsp;&amp;&amp;&nbsp; npm install &nbsp;&amp;&amp;&nbsp; npm start</div>
+    <div style="color:#6b7280;font-size:9px;margin-top:4px;">Requires FastAPI backend already running on port 8000</div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:14px;">Does this structure look right? Confirm and I'll show Section 2: the 4-panel layout design in detail.</p>

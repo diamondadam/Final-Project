@@ -1,0 +1,12 @@
+{
+  "name": "rail-twin-dashboard",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/state.test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

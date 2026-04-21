@@ -30,7 +30,7 @@ export interface WorkOrder {
 }
 
 export const CLASS_COLORS = {
-  Healthy:  { bg: 'bg-emerald-500',  text: 'text-emerald-400',  hex: '#10b981' },
-  Degraded: { bg: 'bg-amber-500',    text: 'text-amber-400',    hex: '#f59e0b' },
-  Damaged:  { bg: 'bg-red-500',      text: 'text-red-400',      hex: '#ef4444' },
+  Healthy:  { bg: 'bg-[#ADEBB3]', text: 'text-[#ADEBB3]', hex: '#ADEBB3' },
+  Degraded: { bg: 'bg-[#f59e0b]', text: 'text-[#f59e0b]', hex: '#f59e0b' },
+  Damaged:  { bg: 'bg-[#FF1A1A]', text: 'text-[#FF1A1A]', hex: '#FF1A1A' },
 } as const
