@@ -21,6 +21,10 @@ uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
 cd frontend && npm install && npm run dev   # dev server at http://localhost:5173
 cd frontend && npm run build               # production build
 cd frontend && npm run lint                # ESLint
+cd frontend && npm run test                # Vitest (run once)
+cd frontend && npm run test:watch          # Vitest (watch mode)
+cd frontend && npx vitest run src/store/twinStore.test.ts          # single test file
+cd frontend && npx vitest run src/components/analytics/utils.test.ts
 
 # Legacy dashboard (Express static server, no install needed)
 node dashboard/server.js                   # serves dashboard/public/ at http://localhost:3000
@@ -33,7 +37,12 @@ python classifier/diagnose_frequencies.py      # PSD + ANOVA frequency analysis
 python week10example/train_stop_decision.py    # safety-stop decision demo
 ```
 
-**Python dependencies:** `fastapi uvicorn[standard] websockets pydantic>=2.0 httpx numpy scipy scikit-learn matplotlib Pillow pyomo joblib`
+**Install Python dependencies:**
+
+```bash
+pip install -r requirements.txt
+pip install joblib   # missing from requirements.txt — needed by the classifier
+```
 
 **API environment variables:**
 
@@ -76,13 +85,18 @@ api/
   models.py              ← Pydantic request/response schemas
 integrations/
   work_orders.py         ← WorkOrderClient + WorkOrderStore (in-memory)
-frontend/                ← React 19 + TypeScript + Vite + Tailwind v4 dashboard
+frontend/                ← React 19 + TypeScript + Vite + Tailwind v4 + Recharts dashboard
   src/
     types.ts             ← shared TypeScript interfaces (TwinState, WorkOrder, CLASS_COLORS)
-    store/twinStore.ts   ← Zustand store; holds live state, tick history (last 60), work orders
+    store/twinStore.ts   ← Zustand store; holds live state, tick/alert/position/belief history (last 60), work orders, repairLog
     hooks/useTwinWebSocket.ts ← connects ws://<host>/ws, auto-reconnects every 2 s
-    components/          ← TrackDashboard, SegmentCard, AlertBanner, TrackConfigurator, WorkOrderPanel
-    pages/WorkOrdersPage.tsx
+    components/
+      NavBar.tsx          ← top-level navigation bar
+      TrackDashboard.tsx, SegmentCard.tsx, AlertBanner.tsx, TrackConfigurator.tsx, WorkOrderPanel.tsx
+      analytics/          ← SpeedAlertChart, AlertBreakdown, PositionTimeline, CommandedVsTargetChart, HealthHeatmap, BeliefConvergence + utils.ts
+      maintenance/        ← WorkOrderList, SegmentOverridePanel, RepairHistoryLog
+    pages/
+      AnalyticsPage.tsx, MaintenancePage.tsx, WorkOrdersPage.tsx
   vite.config.ts         ← proxies /api → http://localhost:8000, /ws → ws://localhost:8000
 dashboard/               ← legacy Express static server (dashboard/public/); superseded by frontend/
 ```
@@ -152,7 +166,9 @@ Work orders are created only on MAP state *transitions* to Degraded or Damaged (
 
 The React dashboard (`frontend/`) connects to the FastAPI backend via Vite's dev proxy. In production, serve the Vite build behind the same origin as the API.
 
-- **State management:** Zustand (`twinStore.ts`). All components read from the store — do not maintain local copies of `TwinState`.
+- **State management:** Zustand (`twinStore.ts`). All components read from the store — do not maintain local copies of `TwinState`. The store exposes: `setState`, `setConnected`, `setWorkOrders`, `addRepairLog`, `clearRepairLog`, `refreshWorkOrders`, `completeWorkOrder`, `applyCorrection`, `resetAll`.
+- **History arrays** are capped at 60 entries: `tickHistory`, `alertHistory`, `positionHistory`, `segmentBeliefHistory`. `repairLog` is prepend-ordered (newest first), uncapped.
 - **WebSocket:** `useTwinWebSocket` is mounted once at `App` level; it writes to the store on every tick. The `ws://` URL is derived from `window.location.host` so it works through the Vite proxy automatically.
-- **REST calls** (`/api/work-orders`, `/api/work-orders/{id}/complete`) go through the `/api` proxy rewrite — call `/api/...` in the frontend, never `http://localhost:8000` directly.
+- **REST calls** (`/api/work-orders`, `/api/work-orders/{id}/complete`, `/api/correction`, `/api/reset`) go through the `/api` proxy rewrite — call `/api/...` in the frontend, never `http://localhost:8000` directly.
 - **Types:** `frontend/src/types.ts` mirrors `api/models.py` exactly. Keep them in sync when changing the API schema.
+- **Note on ARCHITECTURE.md:** That file references `digital_twin/` but the live orchestrator lives in `digital_twin_v2/`. ARCHITECTURE.md is a design spec, not a map of the current file tree.
