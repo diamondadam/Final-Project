@@ -1,9 +1,9 @@
 import { useTwinStore } from '../../store/twinStore'
 import type { RepairLogEntry } from '../../store/twinStore'
 
-const BADGE: Record<RepairLogEntry['type'], string> = {
-  REPAIRED: 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30',
-  OVERRIDE: 'bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/30',
+const BADGE: Record<RepairLogEntry['type'], { bg: string; color: string; border: string }> = {
+  REPAIRED: { bg: '#ADEBB322', color: 'var(--rt-green)', border: '#ADEBB344' },
+  OVERRIDE: { bg: '#87CEEB22', color: 'var(--rt-blue)',  border: '#87CEEB44' },
 }
 
 function formatTime(iso: string) {
@@ -12,36 +12,43 @@ function formatTime(iso: string) {
 
 export function RepairHistoryLog() {
   const { repairLog } = useTwinStore()
-
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-        Repair History
-      </h2>
-      {repairLog.length === 0 ? (
-        <div className="text-zinc-600 text-sm py-4 text-center rounded-xl border border-white/5">
-          No repairs or overrides yet
+      <div className="bg-[var(--rt-surface)] border border-[var(--rt-border)] rounded overflow-hidden">
+        <div className="border-b border-[var(--rt-border)] px-[11px] py-[7px]">
+          <span className="text-[clamp(7px,0.9vw,9px)] font-bold tracking-[2px] text-[var(--rt-cream)] uppercase">
+            Repair History
+          </span>
         </div>
-      ) : (
-        <div className="flex flex-col gap-1.5">
-          {repairLog.map((entry, i) => (
-            <div
-              key={`${entry.timestamp}-${entry.segment_id}-${i}`}
-              className="flex items-center gap-3 px-3 py-2 bg-white/[0.03] border border-white/5 rounded-lg"
-            >
-              <span className="text-[10px] text-zinc-600 font-mono w-16 shrink-0">
-                {formatTime(entry.timestamp)}
-              </span>
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${BADGE[entry.type]}`}>
-                {entry.type}
-              </span>
-              <span className="text-[11px] text-zinc-400">
-                Segment {entry.segment_id} — {entry.detail}
-              </span>
+        <div className="px-[11px] py-[8px]">
+          {repairLog.length === 0 ? (
+            <div className="text-[var(--rt-muted)] text-[clamp(9px,1vw,11px)] py-4 text-center">
+              No repairs or overrides yet
             </div>
-          ))}
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {repairLog.map((entry, i) => {
+                const badge = BADGE[entry.type]
+                return (
+                  <div key={`${entry.timestamp}-${entry.segment_id}-${i}`}
+                    className="flex items-center gap-3 px-3 py-2 rounded border border-[var(--rt-border)] bg-[var(--rt-bg)]">
+                    <span className="text-[clamp(8px,0.9vw,10px)] text-[var(--rt-muted)] font-mono w-16 shrink-0">
+                      {formatTime(entry.timestamp)}
+                    </span>
+                    <span className="text-[clamp(7px,0.8vw,9px)] font-semibold px-1.5 py-0.5 rounded shrink-0 border"
+                      style={{ background: badge.bg, color: badge.color, borderColor: badge.border }}>
+                      {entry.type}
+                    </span>
+                    <span className="text-[clamp(9px,1vw,11px)] text-[var(--rt-text)]">
+                      Segment {entry.segment_id} — {entry.detail}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   )
 }
