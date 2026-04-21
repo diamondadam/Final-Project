@@ -3,13 +3,13 @@ import { useTwinStore } from '../../store/twinStore'
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#18181b',
-    border: '1px solid #3f3f46',
-    borderRadius: 8,
-    fontSize: 12,
+    background: '#1f2937',
+    border: '1px solid #374151',
+    borderRadius: 4,
+    fontSize: 11,
   },
-  labelStyle: { color: '#a1a1aa' },
-  itemStyle: { color: '#818cf8' },
+  labelStyle: { color: '#6b7280' },
+  itemStyle: { color: '#87CEEB' },
 }
 
 export function PositionTimeline() {
@@ -17,40 +17,44 @@ export function PositionTimeline() {
   const nSegs = state?.segments.length ?? 5
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex-1">
-      <p className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">
-        Train Position
-      </p>
-      {positionHistory.length < 2 ? (
-        <div className="flex items-center justify-center h-16 text-zinc-600 text-sm">
-          Waiting for data…
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={100}>
-          <LineChart data={positionHistory}>
-            <XAxis dataKey="tick" tick={{ fontSize: 10, fill: '#52525b' }} />
-            <YAxis
-              domain={[0, nSegs - 1]}
-              ticks={Array.from({ length: nSegs }, (_, i) => i)}
-              tickFormatter={(v) => `seg${v}`}
-              tick={{ fontSize: 9, fill: '#52525b' }}
-              width={34}
-            />
-            <Tooltip
-              {...TOOLTIP_STYLE}
-              formatter={(v: number) => [`seg${v}`, 'position']}
-            />
-            <Line
-              type="stepAfter"
-              dataKey="segment"
-              stroke="#818cf8"
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      )}
+    <div className="bg-[var(--rt-surface)] border border-[var(--rt-border)] rounded overflow-hidden flex-1">
+      <div className="border-b border-[var(--rt-border)] px-[11px] py-[7px]">
+        <span className="text-[clamp(7px,0.9vw,9px)] font-bold tracking-[2px] text-[var(--rt-cream)] uppercase">
+          Train Position
+        </span>
+      </div>
+      <div className="px-[11px] py-[8px]">
+        {positionHistory.length < 2 ? (
+          <div className="flex items-center justify-center h-16 text-[var(--rt-muted)] text-[clamp(9px,1vw,11px)]">
+            Waiting for data…
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={100}>
+            <LineChart data={positionHistory}>
+              <XAxis dataKey="tick" tick={{ fontSize: 10, fill: '#6b7280' }} />
+              <YAxis
+                domain={[0, nSegs - 1]}
+                ticks={Array.from({ length: nSegs }, (_, i) => i)}
+                tickFormatter={(v) => `seg${v}`}
+                tick={{ fontSize: 9, fill: '#6b7280' }}
+                width={34}
+              />
+              <Tooltip
+                {...TOOLTIP_STYLE}
+                formatter={(v: number) => [`seg${v}`, 'position']}
+              />
+              <Line
+                type="stepAfter"
+                dataKey="segment"
+                stroke="#87CEEB"
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
     </div>
   )
 }
