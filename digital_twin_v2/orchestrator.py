@@ -102,6 +102,7 @@ class DigitalTwin:
         # DECIDE
         self.trackers[seg].update(likelihood)
         speed, alert = self.mpc.compute_speed(self.trackers, seg)
+        self.simulator.set_commanded_speed(speed)
 
         # ACT
         self._tick += 1

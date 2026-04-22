@@ -5,8 +5,22 @@ Train and evaluate two track-health classifiers:
 
 Data source: classifier/processed/<material>/<condition>/<run_id>/
   - daq_sensors_1000hz.csv   (1 kHz accelerometer: g4, g5)
-  - arduino_motion_raw.csv   (10 Hz motion: phase, time_ms)
+  - arduino_motion_raw.csv   (10 Hz motion: phase, vel_fps, time_ms)
   - description.json         (label, metadata)
+
+Features are computed SEPARATELY for each motion phase (ACCEL, CRUISE, DECEL)
+and concatenated into a single 99-element vector (33 per phase).  Simple
+velocity normalisation alone cannot remove phase effects because vibration does
+not scale linearly with speed — ACCEL/DECEL motor forces add their own signature
+that is unrelated to track health.  Per-phase features let the model learn
+health-discriminating patterns independently for each phase, including during
+acceleration and braking.
+
+Phases with fewer than MIN_PHASE_SAMPLES samples are zero-padded so the feature
+vector length is constant across all runs and deployment conditions.
+
+Samples below V_MIN_FPS are excluded within ACCEL/DECEL to avoid near-zero
+velocity noise.
 
 Train/test split is grouped by source_run_id so augmented copies of a run
 always land in the same fold as their original — no label leakage.
@@ -46,20 +60,128 @@ DATA_ROOT   = os.path.join(HERE, "processed")
 OUTPUT_DIR  = os.path.join(HERE, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-RANDOM_SEED = 42
-TEST_SIZE   = 0.20
-LABELS      = ["Healthy", "Degraded", "Damaged"]   # display order
+RANDOM_SEED       = 42
+TEST_SIZE         = 0.20
+LABELS            = ["Healthy", "Degraded", "Damaged"]   # display order
+ORDERED_PHASES    = ["ACCEL", "CRUISE", "DECEL"]
+V_MIN_FPS         = 0.30   # exclude samples below this speed
+MIN_PHASE_SAMPLES = 50     # phases with fewer samples are zero-padded
 
 # ---------------------------------------------------------------------------
-# Feature extraction
+# Signal loading helpers
 # ---------------------------------------------------------------------------
-def _cruise_window(motion_path: str) -> tuple[int, int]:
-    times = []
+def _load_active_signals(
+    daq_path: str,
+    motion_path: str,
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """
+    Load raw DAQ samples from ACCEL + CRUISE + DECEL (v >= V_MIN_FPS).
+    Returns (g4, g5, mean_v) — raw G values, not velocity-normalised.
+    Used by uncertainty.py.
+    """
+    motion_t, motion_v = [], []
     with open(motion_path, newline="") as f:
         for row in csv.DictReader(f):
-            if row["phase"] == "CRUISE":
-                times.append(int(row["time_ms"]))
-    return (min(times), max(times)) if times else (0, 0)
+            if row["phase"] in set(ORDERED_PHASES):
+                motion_t.append(int(row["time_ms"]))
+                motion_v.append(float(row["vel_fps"]))
+
+    if not motion_t:
+        return np.array([]), np.array([]), 1.0
+
+    t0, t1 = min(motion_t), max(motion_t)
+    mt = np.asarray(motion_t, dtype=float)
+    mv = np.asarray(motion_v, dtype=float)
+
+    daq_t, g4_raw, g5_raw = [], [], []
+    with open(daq_path, newline="") as f:
+        for row in csv.DictReader(f):
+            t = int(row["time_ms"])
+            if t0 <= t <= t1:
+                daq_t.append(t)
+                g4_raw.append(float(row["g4"]))
+                g5_raw.append(float(row["g5"]))
+
+    if not daq_t:
+        return np.array([]), np.array([]), 1.0
+
+    dt  = np.asarray(daq_t,  dtype=float)
+    g4  = np.asarray(g4_raw, dtype=float)
+    g5  = np.asarray(g5_raw, dtype=float)
+    vel = np.interp(dt, mt, mv)
+
+    mask = vel >= V_MIN_FPS
+    if not np.any(mask):
+        return np.array([]), np.array([]), 1.0
+
+    return g4[mask], g5[mask], float(vel[mask].mean())
+
+
+def _load_phase_signals(
+    daq_path: str,
+    motion_path: str,
+) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+    """
+    Return a dict mapping each phase name to (g4, g5) raw arrays for that
+    phase.  ACCEL and DECEL are additionally filtered to v >= V_MIN_FPS.
+    Phases absent from the run return empty arrays.
+    """
+    # Build per-phase time lists from arduino CSV
+    phase_rows: dict[str, list[int]] = {p: [] for p in ORDERED_PHASES}
+    with open(motion_path, newline="") as f:
+        for row in csv.DictReader(f):
+            if row["phase"] in phase_rows:
+                phase_rows[row["phase"]].append(int(row["time_ms"]))
+
+    # For V_MIN filtering: load the full velocity interpolation table
+    motion_t, motion_v = [], []
+    with open(motion_path, newline="") as f:
+        for row in csv.DictReader(f):
+            if row["phase"] in phase_rows:
+                motion_t.append(int(row["time_ms"]))
+                motion_v.append(float(row["vel_fps"]))
+
+    if not motion_t:
+        return {p: (np.array([]), np.array([])) for p in ORDERED_PHASES}
+
+    mt = np.asarray(motion_t, dtype=float)
+    mv = np.asarray(motion_v, dtype=float)
+
+    # Determine the overall active time window
+    t_global_min = min(motion_t)
+    t_global_max = max(motion_t)
+
+    # Load all DAQ samples in the active window once
+    daq_t, g4_all, g5_all = [], [], []
+    with open(daq_path, newline="") as f:
+        for row in csv.DictReader(f):
+            t = int(row["time_ms"])
+            if t_global_min <= t <= t_global_max:
+                daq_t.append(t)
+                g4_all.append(float(row["g4"]))
+                g5_all.append(float(row["g5"]))
+
+    if not daq_t:
+        return {p: (np.array([]), np.array([])) for p in ORDERED_PHASES}
+
+    dt  = np.asarray(daq_t,  dtype=float)
+    g4a = np.asarray(g4_all, dtype=float)
+    g5a = np.asarray(g5_all, dtype=float)
+    vel = np.interp(dt, mt, mv)
+
+    result: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+    for phase in ORDERED_PHASES:
+        pt = phase_rows[phase]
+        if not pt:
+            result[phase] = (np.array([]), np.array([]))
+            continue
+        t0, t1 = min(pt), max(pt)
+        mask = (dt >= t0) & (dt <= t1)
+        if phase in ("ACCEL", "DECEL"):
+            mask &= vel >= V_MIN_FPS
+        result[phase] = (g4a[mask], g5a[mask])
+
+    return result
 
 
 def _stats(values: list[float]) -> dict:
@@ -154,49 +276,27 @@ def _spike_features(a: np.ndarray, window: int = WINDOW_MS) -> dict:
     }
 
 
-def extract_features(daq_path: str, motion_path: str) -> np.ndarray:
+def _phase_features(g4: np.ndarray, g5: np.ndarray) -> np.ndarray:
     """
-    Return a 1-D feature vector for one run.
-
-    Features (33 total):
-      g4: rms, mean, std, peak_to_peak, kurtosis, skewness, crest_factor,
-          band_low, band_mid, band_high,
-          p99_abs, exceedance_rate, impulse_factor,
-          max_win_rms, max_win_kurtosis                                      (15)
-      g5: same 15                                                            (15)
-      cross: pearson_corr, rms_ratio, diff_rms                               (3)
+    Compute the 33-element feature block for one (g4, g5) pair.
+    Returns zeros if fewer than MIN_PHASE_SAMPLES samples are available.
     """
-    t_min, t_max = _cruise_window(motion_path)
+    if len(g4) < MIN_PHASE_SAMPLES:
+        return np.zeros(33)
 
-    g4_vals, g5_vals = [], []
-    with open(daq_path, newline="") as f:
-        for row in csv.DictReader(f):
-            t = int(row["time_ms"])
-            if t_min <= t <= t_max:
-                g4_vals.append(float(row["g4"]))
-                g5_vals.append(float(row["g5"]))
-
-    s4 = _stats(g4_vals)
-    s5 = _stats(g5_vals)
-    b4 = _fft_band_energies(g4_vals)
-    b5 = _fft_band_energies(g5_vals)
-
-    g4 = np.asarray(g4_vals)
-    g5 = np.asarray(g5_vals)
-
+    s4 = _stats(g4.tolist())
+    s5 = _stats(g5.tolist())
+    b4 = _fft_band_energies(g4.tolist())
+    b5 = _fft_band_energies(g5.tolist())
     k4 = _spike_features(g4)
     k5 = _spike_features(g5)
 
-    if len(g4) > 1 and len(g5) > 1:
-        corr = float(np.corrcoef(g4, g5)[0, 1])
-    else:
-        corr = 0.0
-
+    corr     = float(np.corrcoef(g4, g5)[0, 1]) if len(g4) > 1 else 0.0
     rms4     = s4["rms"] + 1e-12
     rms5     = s5["rms"] + 1e-12
-    diff_rms = float(np.sqrt(np.mean((g4 - g5) ** 2))) if len(g4) else 0.0
+    diff_rms = float(np.sqrt(np.mean((g4 - g5) ** 2)))
 
-    feat = [
+    return np.asarray([
         s4["rms"], s4["mean"], s4["std"], s4["peak_to_peak"],
         s4["kurtosis"], s4["skewness"], s4["crest_factor"],
         b4["band_low"], b4["band_mid"], b4["band_high"],
@@ -212,23 +312,36 @@ def extract_features(daq_path: str, motion_path: str) -> np.ndarray:
         corr,
         rms4 / rms5,
         diff_rms,
-    ]
-    return np.asarray(feat, dtype=float)
+    ], dtype=float)
 
 
-FEATURE_NAMES = [
+def extract_features(daq_path: str, motion_path: str) -> np.ndarray:
+    """
+    Return a 99-element feature vector: 33 features × 3 phases
+    (ACCEL, CRUISE, DECEL) concatenated in that order.
+
+    Computing features separately per phase allows the model to learn
+    health-discriminating patterns for each operating regime independently.
+    Phases with fewer than MIN_PHASE_SAMPLES samples are zero-padded so
+    the vector length is constant across all runs and deployment conditions.
+    """
+    phase_signals = _load_phase_signals(daq_path, motion_path)
+    blocks = [_phase_features(*phase_signals[p]) for p in ORDERED_PHASES]
+    return np.concatenate(blocks)
+
+
+_BASE_NAMES = [
     "g4_rms", "g4_mean", "g4_std", "g4_ptp", "g4_kurtosis", "g4_skewness", "g4_crest",
     "g4_band_low", "g4_band_mid", "g4_band_high",
     "g4_p99_abs", "g4_exceedance_rate", "g4_impulse_factor",
     "g4_max_win_rms", "g4_max_win_kurtosis",
-
     "g5_rms", "g5_mean", "g5_std", "g5_ptp", "g5_kurtosis", "g5_skewness", "g5_crest",
     "g5_band_low", "g5_band_mid", "g5_band_high",
     "g5_p99_abs", "g5_exceedance_rate", "g5_impulse_factor",
     "g5_max_win_rms", "g5_max_win_kurtosis",
-
     "cross_corr", "rms_ratio", "diff_rms",
 ]
+FEATURE_NAMES = [f"{p}_{n}" for p in ORDERED_PHASES for n in _BASE_NAMES]
 
 
 # ---------------------------------------------------------------------------

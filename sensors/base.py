@@ -29,3 +29,9 @@ class BaseSensorSimulator(ABC):
     @abstractmethod
     def set_track_config(self, config: list[int]) -> None:
         """Update ground-truth health state per segment (0/1/2 per index)."""
+
+    def set_commanded_speed(self, speed_fps: float) -> None:
+        """
+        Notify the simulator of the current MPC-commanded train speed.
+        Default is a no-op; override in speed-aware implementations.
+        """

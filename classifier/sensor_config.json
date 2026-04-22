@@ -14,5 +14,10 @@
     "monte_carlo_trials": 200,
     "confidence_band_sigma": 1.0,
     "random_seed": 42
+  },
+  "classifier": {
+    "active_phases": ["ACCEL", "CRUISE", "DECEL"],
+    "v_min_fps": 0.3,
+    "notes": "Samples below v_min_fps are excluded to avoid near-zero velocity noise amplification during normalization"
   }
 }

@@ -3,56 +3,56 @@
   "n_test": 52,
   "knn": {
     "k": 7,
-    "cv_balanced_accuracy_mean": 0.9427,
-    "cv_balanced_accuracy_std": 0.0354,
-    "test_balanced_accuracy": 0.9639
+    "cv_balanced_accuracy_mean": 0.911,
+    "cv_balanced_accuracy_std": 0.0223,
+    "test_balanced_accuracy": 0.9825
   },
   "gbm": {
     "n_estimators": 300,
     "learning_rate": 0.05,
-    "cv_balanced_accuracy_mean": 0.9319,
-    "cv_balanced_accuracy_std": 0.0385,
-    "test_balanced_accuracy": 0.9195,
+    "cv_balanced_accuracy_mean": 0.9551,
+    "cv_balanced_accuracy_std": 0.0305,
+    "test_balanced_accuracy": 0.9417,
     "top_features": [
       {
-        "feature": "g5_rms",
-        "importance": 0.3232
+        "feature": "CRUISE_g5_rms",
+        "importance": 0.3119
       },
       {
-        "feature": "g4_kurtosis",
-        "importance": 0.1881
+        "feature": "CRUISE_g4_kurtosis",
+        "importance": 0.1801
       },
       {
-        "feature": "cross_corr",
-        "importance": 0.1669
+        "feature": "CRUISE_cross_corr",
+        "importance": 0.1408
       },
       {
-        "feature": "g5_impulse_factor",
-        "importance": 0.076
+        "feature": "CRUISE_g5_impulse_factor",
+        "importance": 0.0643
       },
       {
-        "feature": "g5_kurtosis",
-        "importance": 0.043
+        "feature": "CRUISE_g5_kurtosis",
+        "importance": 0.0418
       },
       {
-        "feature": "g4_band_mid",
-        "importance": 0.0388
+        "feature": "ACCEL_g5_rms",
+        "importance": 0.0399
       },
       {
-        "feature": "g5_band_mid",
-        "importance": 0.0188
+        "feature": "CRUISE_g4_band_mid",
+        "importance": 0.032
       },
       {
-        "feature": "g4_max_win_kurtosis",
-        "importance": 0.0176
+        "feature": "DECEL_g5_crest",
+        "importance": 0.0183
       },
       {
-        "feature": "g5_p99_abs",
-        "importance": 0.0174
+        "feature": "CRUISE_g5_band_mid",
+        "importance": 0.0182
       },
       {
-        "feature": "g5_mean",
-        "importance": 0.0159
+        "feature": "CRUISE_g4_max_win_kurtosis",
+        "importance": 0.016
       }
     ]
   }

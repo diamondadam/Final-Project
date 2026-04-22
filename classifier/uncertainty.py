@@ -39,7 +39,10 @@ import numpy as np
 from .train_classifiers import (
     FEATURE_NAMES,
     WINDOW_MS,
-    _cruise_window,
+    ORDERED_PHASES,
+    _load_active_signals,
+    _load_phase_signals,
+    _phase_features,
     _stats,
     _fft_band_energies,
     _spike_features,
@@ -59,57 +62,14 @@ def load_sensor_config(path: str = _CONFIG_PATH) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Raw signal loader (CRUISE phase only)
+# Nominal feature vector (99-element, per-phase)
 # ---------------------------------------------------------------------------
 
-def _load_cruise_signals(daq_path: str, motion_path: str) -> tuple[np.ndarray, np.ndarray]:
-    """Return (g4, g5) numpy arrays covering only the CRUISE phase."""
-    t_min, t_max = _cruise_window(motion_path)
-    g4_vals, g5_vals = [], []
-    with open(daq_path, newline="") as f:
-        for row in csv.DictReader(f):
-            t = int(row["time_ms"])
-            if t_min <= t <= t_max:
-                g4_vals.append(float(row["g4"]))
-                g5_vals.append(float(row["g5"]))
-    return np.asarray(g4_vals), np.asarray(g5_vals)
-
-
-# ---------------------------------------------------------------------------
-# Feature vector from raw arrays (no file I/O)
-# ---------------------------------------------------------------------------
-
-def _features_from_arrays(g4: np.ndarray, g5: np.ndarray) -> np.ndarray:
-    """Compute the 33-element feature vector directly from signal arrays."""
-    s4 = _stats(g4.tolist())
-    s5 = _stats(g5.tolist())
-    b4 = _fft_band_energies(g4.tolist())
-    b5 = _fft_band_energies(g5.tolist())
-    k4 = _spike_features(g4, window=WINDOW_MS)
-    k5 = _spike_features(g5, window=WINDOW_MS)
-
-    corr     = float(np.corrcoef(g4, g5)[0, 1]) if len(g4) > 1 else 0.0
-    rms4     = s4["rms"] + 1e-12
-    rms5     = s5["rms"] + 1e-12
-    diff_rms = float(np.sqrt(np.mean((g4 - g5) ** 2))) if len(g4) else 0.0
-
-    return np.asarray([
-        s4["rms"], s4["mean"], s4["std"], s4["peak_to_peak"],
-        s4["kurtosis"], s4["skewness"], s4["crest_factor"],
-        b4["band_low"], b4["band_mid"], b4["band_high"],
-        k4["p99_abs"], k4["exceedance_rate"], k4["impulse_factor"],
-        k4["max_win_rms"], k4["max_win_kurtosis"],
-
-        s5["rms"], s5["mean"], s5["std"], s5["peak_to_peak"],
-        s5["kurtosis"], s5["skewness"], s5["crest_factor"],
-        b5["band_low"], b5["band_mid"], b5["band_high"],
-        k5["p99_abs"], k5["exceedance_rate"], k5["impulse_factor"],
-        k5["max_win_rms"], k5["max_win_kurtosis"],
-
-        corr,
-        rms4 / rms5,
-        diff_rms,
-    ], dtype=float)
+def _nominal_features(daq_path: str, motion_path: str) -> np.ndarray:
+    """Compute the full 99-element per-phase feature vector from disk."""
+    phase_signals = _load_phase_signals(daq_path, motion_path)
+    blocks = [_phase_features(*phase_signals[p]) for p in ORDERED_PHASES]
+    return np.concatenate(blocks)
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +80,7 @@ def compute_feature_sigmas(
     g4: np.ndarray,
     g5: np.ndarray,
     noise_sigma: float,
+    n_features: int = 33,
 ) -> np.ndarray:
     """
     Return a 1-D array of 1-σ analytical uncertainties for each of the 33
@@ -155,7 +116,7 @@ def compute_feature_sigmas(
     σn = noise_sigma
 
     if N == 0:
-        return np.zeros(len(FEATURE_NAMES))
+        return np.zeros(n_features)
 
     # --- Shared building blocks ---
     rms4   = float(np.sqrt(np.mean(g4 ** 2))) + 1e-12
@@ -275,12 +236,22 @@ def predict_with_uncertainty(
 
     rng = np.random.default_rng(seed)
 
-    # Load clean signals and compute nominal features once
-    g4, g5       = _load_cruise_signals(daq_path, motion_path)
-    nominal_feat = _features_from_arrays(g4, g5)
+    # Load per-phase signals and compute the 99-element nominal feature vector
+    phase_signals = _load_phase_signals(daq_path, motion_path)
+    nominal_feat  = np.concatenate(
+        [_phase_features(*phase_signals[p]) for p in ORDERED_PHASES]
+    )
 
-    # Analytical 1-σ per feature from sensor noise spec
-    feat_sigmas = compute_feature_sigmas(g4, g5, noise_sigma)
+    # Build per-phase σ blocks and concatenate to match the 99-element layout
+    sigma_blocks = []
+    for phase in ORDERED_PHASES:
+        g4_p, g5_p = phase_signals[phase]
+        sigma_blocks.append(compute_feature_sigmas(g4_p, g5_p, noise_sigma, n_features=33))
+    feat_sigmas = np.concatenate(sigma_blocks)
+
+    # Report mean velocity from all active phases for diagnostic output
+    _, _, mean_v = _load_active_signals(daq_path, motion_path)
+    noise_sigma_eff = noise_sigma  # raw features; no velocity normalisation
 
     # Monte Carlo: perturb features independently by their analytical σ
     noise_matrix   = rng.normal(0.0, 1.0, size=(n_trials, len(nominal_feat)))
@@ -319,11 +290,13 @@ def predict_with_uncertainty(
     )
 
     return {
-        "label":               modal_label,
-        "probabilities":       mean_probas,
-        "confidence":          round(confidence, 4),
-        "label_distribution":  dict(label_counts),
-        "n_trials":            n_trials,
-        "noise_sigma_g":       noise_sigma,
-        "feature_uncertainty": feature_uncertainty,
+        "label":                  modal_label,
+        "probabilities":          mean_probas,
+        "confidence":             round(confidence, 4),
+        "label_distribution":     dict(label_counts),
+        "n_trials":               n_trials,
+        "noise_sigma_g":          noise_sigma,
+        "noise_sigma_normalised": round(noise_sigma_eff, 6),
+        "mean_velocity_fps":      round(mean_v, 4),
+        "feature_uncertainty":    feature_uncertainty,
     }
