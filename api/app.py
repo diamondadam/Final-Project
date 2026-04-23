@@ -30,7 +30,11 @@ _ROOT = str(Path(__file__).parent.parent)
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from api.models import TwinStateResponse, CorrectionRequest, TrackConfigRequest, twin_state_to_response
+from api.models import (
+    TwinStateResponse, CorrectionRequest,
+    TrackConfigRequest, TrackConfigResponse,
+    twin_state_to_response,
+)
 from api.websocket import WebSocketManager
 from digital_twin_v2.orchestrator import DigitalTwin
 from integrations.work_orders import WorkOrderClient, WorkOrderStore
@@ -46,6 +50,10 @@ def _track_config() -> list[int]:
 
 def _tick_interval() -> float:
     return float(os.getenv("TICK_INTERVAL_S", "1.0"))
+
+
+def _default_segment_length_cm() -> float:
+    return float(os.getenv("SEGMENT_LENGTH_CM", "400.0"))
 
 
 def _build_simulator():
@@ -65,6 +73,7 @@ ws_manager = WebSocketManager()
 wo_store = WorkOrderStore()
 twin: DigitalTwin | None = None
 _ooda_task: asyncio.Task | None = None
+_segment_length_cm: float = 400.0
 
 
 async def _ooda_loop(interval_s: float) -> None:
@@ -85,8 +94,9 @@ async def _ooda_loop(interval_s: float) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global twin, _ooda_task
+    global twin, _ooda_task, _segment_length_cm
 
+    _segment_length_cm = _default_segment_length_cm()
     track_config = _track_config()
     simulator = _build_simulator()
     work_order_client = WorkOrderClient.from_env()
@@ -150,17 +160,26 @@ async def reset():
 
 @app.post("/config")
 async def set_config(req: TrackConfigRequest):
+    global _segment_length_cm
     if not req.track_config:
         raise HTTPException(status_code=422, detail="track_config must not be empty")
     if any(s not in (0, 1, 2) for s in req.track_config):
         raise HTTPException(status_code=422, detail="Each segment state must be 0, 1, or 2")
+    if req.segment_length_cm is not None:
+        if req.segment_length_cm <= 0:
+            raise HTTPException(status_code=422, detail="segment_length_cm must be positive")
+        _segment_length_cm = req.segment_length_cm
     twin.set_track_config(req.track_config)
-    return {"ok": True, "track_config": req.track_config}
+    return {"ok": True, "track_config": req.track_config, "segment_length_cm": _segment_length_cm}
 
 
-@app.get("/config")
+@app.get("/config", response_model=TrackConfigResponse)
 async def get_config():
-    return {"track_config": twin.track_config}
+    return TrackConfigResponse(
+        track_config=twin.track_config,
+        segment_length_cm=_segment_length_cm,
+        num_segments=len(twin.track_config),
+    )
 
 
 @app.get("/work-orders")

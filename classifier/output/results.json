@@ -5,7 +5,56 @@
     "k": 7,
     "cv_balanced_accuracy_mean": 0.911,
     "cv_balanced_accuracy_std": 0.0223,
-    "test_balanced_accuracy": 0.9825
+    "test_balanced_accuracy": 0.9825,
+    "f1_per_class": {
+      "Healthy": 0.9677,
+      "Degraded": 0.973,
+      "Damaged": 1.0
+    },
+    "f1_macro": 0.9802,
+    "f1_weighted": 0.9808,
+    "top_features": [
+      {
+        "feature": "DECEL_g5_mean",
+        "importance": 0.0044
+      },
+      {
+        "feature": "DECEL_g5_rms",
+        "importance": 0.0044
+      },
+      {
+        "feature": "CRUISE_g4_max_win_kurtosis",
+        "importance": 0.0044
+      },
+      {
+        "feature": "ACCEL_g5_max_win_rms",
+        "importance": 0.0044
+      },
+      {
+        "feature": "ACCEL_rms_ratio",
+        "importance": 0.0022
+      },
+      {
+        "feature": "ACCEL_g5_mean",
+        "importance": 0.0022
+      },
+      {
+        "feature": "ACCEL_g5_rms",
+        "importance": 0.0022
+      },
+      {
+        "feature": "ACCEL_g4_crest",
+        "importance": 0.0022
+      },
+      {
+        "feature": "CRUISE_rms_ratio",
+        "importance": 0.0022
+      },
+      {
+        "feature": "DECEL_cross_corr",
+        "importance": 0.0
+      }
+    ]
   },
   "gbm": {
     "n_estimators": 300,
@@ -13,6 +62,13 @@
     "cv_balanced_accuracy_mean": 0.9551,
     "cv_balanced_accuracy_std": 0.0305,
     "test_balanced_accuracy": 0.9417,
+    "f1_per_class": {
+      "Healthy": 0.9032,
+      "Degraded": 0.9474,
+      "Damaged": 0.9714
+    },
+    "f1_macro": 0.9407,
+    "f1_weighted": 0.943,
     "top_features": [
       {
         "feature": "CRUISE_g5_rms",
@@ -53,6 +109,63 @@
       {
         "feature": "CRUISE_g4_max_win_kurtosis",
         "importance": 0.016
+      }
+    ]
+  },
+  "svm": {
+    "kernel": "rbf",
+    "C": 10.0,
+    "gamma": "scale",
+    "cv_balanced_accuracy_mean": 0.9365,
+    "cv_balanced_accuracy_std": 0.0395,
+    "test_balanced_accuracy": 0.9427,
+    "f1_per_class": {
+      "Healthy": 0.9333,
+      "Degraded": 0.9444,
+      "Damaged": 0.9474
+    },
+    "f1_macro": 0.9417,
+    "f1_weighted": 0.9423,
+    "top_features": [
+      {
+        "feature": "CRUISE_g5_kurtosis",
+        "importance": 0.0156
+      },
+      {
+        "feature": "ACCEL_g5_mean",
+        "importance": 0.0093
+      },
+      {
+        "feature": "CRUISE_g4_max_win_kurtosis",
+        "importance": 0.0089
+      },
+      {
+        "feature": "CRUISE_cross_corr",
+        "importance": 0.0067
+      },
+      {
+        "feature": "ACCEL_g4_std",
+        "importance": 0.0044
+      },
+      {
+        "feature": "CRUISE_g4_kurtosis",
+        "importance": 0.0044
+      },
+      {
+        "feature": "ACCEL_g5_rms",
+        "importance": 0.0037
+      },
+      {
+        "feature": "ACCEL_rms_ratio",
+        "importance": 0.0022
+      },
+      {
+        "feature": "DECEL_g4_impulse_factor",
+        "importance": 0.0022
+      },
+      {
+        "feature": "DECEL_g5_band_mid",
+        "importance": 0.0
       }
     ]
   }

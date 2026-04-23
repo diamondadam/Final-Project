@@ -45,12 +45,15 @@ import joblib
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import GroupShuffleSplit, StratifiedKFold, cross_val_score
 from sklearn.metrics import (
-    classification_report, confusion_matrix, ConfusionMatrixDisplay, balanced_accuracy_score
+    classification_report, confusion_matrix, ConfusionMatrixDisplay,
+    balanced_accuracy_score, f1_score,
 )
+from sklearn.inspection import permutation_importance
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -456,9 +459,24 @@ def main() -> None:
     y_pred_knn = knn_pipe.predict(X_test)
 
     print(f"  Test balanced-accuracy: {balanced_accuracy_score(y_test, y_pred_knn):.3f}")
-    print(classification_report(y_test, y_pred_knn, target_names=LABELS, zero_division=0))
+    print(classification_report(y_test, y_pred_knn, labels=LABELS, target_names=LABELS, zero_division=0))
     plot_confusion(y_test, y_pred_knn, "KNN — Confusion Matrix",
                    os.path.join(OUTPUT_DIR, "confusion_knn.png"))
+
+    print("  Computing permutation importances for KNN (this may take ~30 s) ...")
+    perm = permutation_importance(
+        knn_pipe, X_test, y_test,
+        n_repeats=10, random_state=RANDOM_SEED, scoring="balanced_accuracy",
+    )
+    plot_feature_importance(
+        perm.importances_mean,
+        "KNN — Top Feature Importances (Permutation)",
+        os.path.join(OUTPUT_DIR, "feature_importance_knn.png"),
+    )
+
+    knn_f1_per_class = f1_score(y_test, y_pred_knn, labels=LABELS, average=None, zero_division=0)
+    knn_f1_macro     = f1_score(y_test, y_pred_knn, average="macro",    zero_division=0)
+    knn_f1_weighted  = f1_score(y_test, y_pred_knn, average="weighted", zero_division=0)
 
     # --- Gradient Boosting -------------------------------------------------
     print("\n--- Gradient Boosting ---")
@@ -484,7 +502,7 @@ def main() -> None:
     y_pred_gbm = gbm_pipe.predict(X_test)
 
     print(f"  Test balanced-accuracy: {balanced_accuracy_score(y_test, y_pred_gbm):.3f}")
-    print(classification_report(y_test, y_pred_gbm, target_names=LABELS, zero_division=0))
+    print(classification_report(y_test, y_pred_gbm, labels=LABELS, target_names=LABELS, zero_division=0))
     plot_confusion(y_test, y_pred_gbm, "Gradient Boosting — Confusion Matrix",
                    os.path.join(OUTPUT_DIR, "confusion_gbm.png"))
 
@@ -492,9 +510,53 @@ def main() -> None:
     plot_feature_importance(importances, "GBM — Top Feature Importances",
                             os.path.join(OUTPUT_DIR, "feature_importance_gbm.png"))
 
+    gbm_f1_per_class = f1_score(y_test, y_pred_gbm, labels=LABELS, average=None, zero_division=0)
+    gbm_f1_macro     = f1_score(y_test, y_pred_gbm, average="macro",    zero_division=0)
+    gbm_f1_weighted  = f1_score(y_test, y_pred_gbm, average="weighted", zero_division=0)
+
+    # --- SVM ---------------------------------------------------------------
+    print("\n--- SVM ---")
+    svm_pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("svm",    SVC(kernel="rbf", C=10.0, gamma="scale",
+                       class_weight="balanced", probability=True,
+                       random_state=RANDOM_SEED)),
+    ])
+
+    cv_svm = cross_val_score(
+        svm_pipe, X_train, y_train,
+        cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED),
+        scoring="balanced_accuracy",
+    )
+    print(f"  CV balanced-accuracy: {cv_svm.mean():.3f} ± {cv_svm.std():.3f}")
+
+    svm_pipe.fit(X_train, y_train)
+    y_pred_svm = svm_pipe.predict(X_test)
+
+    print(f"  Test balanced-accuracy: {balanced_accuracy_score(y_test, y_pred_svm):.3f}")
+    print(classification_report(y_test, y_pred_svm, labels=LABELS, target_names=LABELS, zero_division=0))
+    plot_confusion(y_test, y_pred_svm, "SVM — Confusion Matrix",
+                   os.path.join(OUTPUT_DIR, "confusion_svm.png"))
+
+    print("  Computing permutation importances for SVM (this may take ~30 s) ...")
+    perm_svm = permutation_importance(
+        svm_pipe, X_test, y_test,
+        n_repeats=10, random_state=RANDOM_SEED, scoring="balanced_accuracy",
+    )
+    plot_feature_importance(
+        perm_svm.importances_mean,
+        "SVM — Top Feature Importances (Permutation)",
+        os.path.join(OUTPUT_DIR, "feature_importance_svm.png"),
+    )
+
+    svm_f1_per_class = f1_score(y_test, y_pred_svm, labels=LABELS, average=None, zero_division=0)
+    svm_f1_macro     = f1_score(y_test, y_pred_svm, average="macro",    zero_division=0)
+    svm_f1_weighted  = f1_score(y_test, y_pred_svm, average="weighted", zero_division=0)
+
     # --- Persist trained models -------------------------------------------
     joblib.dump(knn_pipe, os.path.join(OUTPUT_DIR, "model_knn.joblib"))
     joblib.dump(gbm_pipe, os.path.join(OUTPUT_DIR, "model_gbm.joblib"))
+    joblib.dump(svm_pipe, os.path.join(OUTPUT_DIR, "model_svm.joblib"))
     print(f"\nModels saved to {OUTPUT_DIR}")
 
     # --- Save results summary ---------------------------------------------
@@ -506,6 +568,13 @@ def main() -> None:
             "cv_balanced_accuracy_mean": round(float(cv_knn.mean()), 4),
             "cv_balanced_accuracy_std":  round(float(cv_knn.std()),  4),
             "test_balanced_accuracy":    round(float(balanced_accuracy_score(y_test, y_pred_knn)), 4),
+            "f1_per_class":  {label: round(float(s), 4) for label, s in zip(LABELS, knn_f1_per_class)},
+            "f1_macro":      round(float(knn_f1_macro),    4),
+            "f1_weighted":   round(float(knn_f1_weighted), 4),
+            "top_features":  [
+                {"feature": FEATURE_NAMES[i], "importance": round(float(perm.importances_mean[i]), 4)}
+                for i in np.argsort(perm.importances_mean)[::-1][:10]
+            ],
         },
         "gbm": {
             "n_estimators": 300,
@@ -513,9 +582,27 @@ def main() -> None:
             "cv_balanced_accuracy_mean": round(float(cv_gbm.mean()), 4),
             "cv_balanced_accuracy_std":  round(float(cv_gbm.std()),  4),
             "test_balanced_accuracy":    round(float(balanced_accuracy_score(y_test, y_pred_gbm)), 4),
+            "f1_per_class":  {label: round(float(s), 4) for label, s in zip(LABELS, gbm_f1_per_class)},
+            "f1_macro":      round(float(gbm_f1_macro),    4),
+            "f1_weighted":   round(float(gbm_f1_weighted), 4),
             "top_features": [
                 {"feature": FEATURE_NAMES[i], "importance": round(float(importances[i]), 4)}
                 for i in np.argsort(importances)[::-1][:10]
+            ],
+        },
+        "svm": {
+            "kernel": "rbf",
+            "C": 10.0,
+            "gamma": "scale",
+            "cv_balanced_accuracy_mean": round(float(cv_svm.mean()), 4),
+            "cv_balanced_accuracy_std":  round(float(cv_svm.std()),  4),
+            "test_balanced_accuracy":    round(float(balanced_accuracy_score(y_test, y_pred_svm)), 4),
+            "f1_per_class":  {label: round(float(s), 4) for label, s in zip(LABELS, svm_f1_per_class)},
+            "f1_macro":      round(float(svm_f1_macro),    4),
+            "f1_weighted":   round(float(svm_f1_weighted), 4),
+            "top_features":  [
+                {"feature": FEATURE_NAMES[i], "importance": round(float(perm_svm.importances_mean[i]), 4)}
+                for i in np.argsort(perm_svm.importances_mean)[::-1][:10]
             ],
         },
     }

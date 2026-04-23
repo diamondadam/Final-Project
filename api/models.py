@@ -24,7 +24,14 @@ class CorrectionRequest(BaseModel):
     state: int                   # 0=Healthy 1=Degraded 2=Damaged
 
 class TrackConfigRequest(BaseModel):
-    track_config: list[int]      # e.g. [0, 1, 2, 1, 0] — one entry per segment
+    track_config: list[int]           # e.g. [0, 1, 2, 1, 0] — one entry per segment
+    segment_length_cm: float | None = None  # optional — keeps current value if omitted
+
+
+class TrackConfigResponse(BaseModel):
+    track_config: list[int]
+    segment_length_cm: float
+    num_segments: int
 
 
 def twin_state_to_response(state) -> TwinStateResponse:
