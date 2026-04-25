@@ -10,17 +10,16 @@ export function LiveFeedHUD() {
     <div className="relative rounded-xl overflow-hidden border border-[var(--rt-border-dim)] bg-[var(--rt-surface)] flex flex-col h-full min-h-[300px]">
       <div className="absolute inset-0 z-0">
         {/* Unreal Engine Pixel Streaming iframe */}
-        <iframe 
-          src="http://127.0.0.1:8888" 
-          title="Unreal Engine Live Feed" 
-          className="w-full h-full border-0 pointer-events-auto"
-          allow="autoplay; fullscreen; xr-spatial-tracking"
+        <iframe
+          src="http://127.0.0.1"
+          className="w-full h-full border-0"
+          allow="autoplay; fullscreen"
         />
         {/* HUD Scanline overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none z-10" />
       </div>
 
-      <div className="relative z-20 p-4 flex flex-col h-full justify-between">
+      <div className="relative z-20 p-4 flex flex-col h-full justify-between pointer-events-none">
         <div className="flex justify-between items-start">
           <div className="bg-black/50 backdrop-blur-md px-3 py-2 rounded-md border border-white/10">
             <div className="text-[clamp(7px,0.8vw,10px)] font-bold tracking-widest text-[var(--rt-muted)] uppercase mb-1">
